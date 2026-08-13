@@ -43,12 +43,16 @@ class LiftRytApp extends ConsumerWidget {
   }
 }
 
-/// Four states: the once-per-launch splash reveal, then exactly the same
-/// bootstrapping -> unauthenticated -> authenticated flow that mirrors
-/// `frontend/src/components/ProtectedRoute.tsx`. [_splashDone] is local
-/// widget state, not tied to auth — it flips once, on the fixed-duration
-/// [SplashScreen] finishing, and this widget is only ever mounted once at
-/// the app root, so the splash never replays on ordinary in-app navigation.
+/// Three states: the once-per-launch splash reveal, then straight to
+/// unauthenticated or authenticated — no separate "loading" state in
+/// between. [AuthController] resolves synchronously from a local cache of
+/// the last-known session (see its doc comment), so by the time the splash
+/// finishes there's already a best-guess answer to render; a background
+/// refresh silently confirms or corrects it from there. [_splashDone] is
+/// local widget state, not tied to auth — it flips once, on the
+/// fixed-duration [SplashScreen] finishing, and this widget is only ever
+/// mounted once at the app root, so the splash never replays on ordinary
+/// in-app navigation.
 class AuthGate extends ConsumerStatefulWidget {
   const AuthGate({super.key});
 
@@ -66,14 +70,6 @@ class _AuthGateState extends ConsumerState<AuthGate> {
     }
 
     final auth = ref.watch(authControllerProvider);
-
-    if (auth.isBootstrapping) {
-      return Scaffold(
-        body: Center(
-          child: Text('Loading...', style: TextStyle(color: context.colors.inkSecondary)),
-        ),
-      );
-    }
 
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 250),

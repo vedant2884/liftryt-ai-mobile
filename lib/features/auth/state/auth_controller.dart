@@ -1,91 +1,85 @@
-import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/api/api_exception.dart';
+import '../../../core/api/api_client.dart';
 import '../../../core/api/auth_session.dart';
 import '../../../core/api/providers.dart';
+import '../../../core/auth/session_cache.dart';
 import '../data/auth_api.dart';
 import '../data/models.dart';
 
 class AuthState {
-  final bool isBootstrapping;
   final UserProfile? user;
 
-  const AuthState({this.isBootstrapping = true, this.user});
+  const AuthState({this.user});
 
   bool get isAuthenticated => user != null;
 }
 
 /// App-wide auth state — mirrors `frontend/src/store/authStore.ts` plus the
-/// silent-refresh-on-launch bootstrap from `frontend/src/App.tsx`:
-/// the access token itself is never persisted to disk (kept only in
-/// [authSession], in memory), session persistence instead comes from the
-/// refresh cookie the Dio cookie jar already keeps on disk, exactly like the
-/// browser's httpOnly cookie.
+/// silent-refresh-on-launch bootstrap from `frontend/src/App.tsx`, with one
+/// deliberate difference: the initial state is never "unknown, please
+/// wait" — [build] resolves synchronously to a [SessionCache]-backed guess
+/// (Dashboard for a previously-signed-in user, Login otherwise) so the app
+/// never shows a blank loading screen on launch. [_bootstrap] then
+/// reconciles that guess against the server in the background: the access
+/// token itself is never persisted to disk (kept only in [authSession], in
+/// memory), so this is purely a *display* optimization — real API calls
+/// still require the background refresh (or the 401 interceptor's own
+/// refresh, deduped against the same in-flight call — see
+/// `core/api/api_client.dart`) to actually succeed before they're
+/// authenticated.
 class AuthController extends Notifier<AuthState> {
   late final AuthApi _authApi;
+  late final SessionCache _sessionCache;
 
   @override
   AuthState build() {
     _authApi = ref.read(authApiProvider);
+    _sessionCache = ref.read(sessionCacheProvider);
 
     // The API client's 401-retry interceptor also refreshes the token
     // outside of any explicit call the UI makes — these hooks keep this
-    // provider's state in sync with whatever the interceptor just did.
+    // provider's state (and the local display cache) in sync with whatever
+    // the interceptor, or this provider's own bootstrap below, just did.
     authSession.onTokenRefreshed = (accessToken, userJson) {
-      state = AuthState(isBootstrapping: false, user: UserProfile.fromJson(userJson));
+      final user = UserProfile.fromJson(userJson);
+      _sessionCache.save(user);
+      state = AuthState(user: user);
     };
     authSession.onSessionExpired = () {
-      state = const AuthState(isBootstrapping: false, user: null);
+      _sessionCache.clear();
+      state = const AuthState(user: null);
     };
 
     _bootstrap();
-    return const AuthState(isBootstrapping: true, user: null);
+    return AuthState(user: _sessionCache.load());
   }
 
-  /// A cold Render free-tier instance can take 30-60s+ to spin back up (no
-  /// persistent disk on the free plan, so it re-downloads the embedding
-  /// model on every cold start) — well past the app's normal 15s/30s
-  /// request timeouts. Retrying with a much longer timeout here, and only
-  /// ever treating a genuine 401 as "you're actually logged out", is what
-  /// stops a slow cold start from looking identical to a lost session.
-  static const _bootstrapTimeout = Duration(seconds: 45);
-  static const _bootstrapAttempts = 2;
-
+  /// Goes through the same deduped [refreshAccessToken] the 401 interceptor
+  /// uses (not a second independent call) — otherwise this and an early
+  /// screen's own first API call could both race a rotating refresh token,
+  /// and whichever loses would fail spuriously. A timeout/connection error
+  /// here (e.g. a cold Render free-tier instance taking 30-60s+ to spin
+  /// back up) intentionally does nothing — see `_doRefresh` — so the
+  /// optimistic state from [build] just stands until a later request
+  /// (retried naturally by the interceptor, or the user's next app launch)
+  /// gets through.
   Future<void> _bootstrap() async {
-    for (var attempt = 1; attempt <= _bootstrapAttempts; attempt++) {
-      try {
-        final result = await _authApi.refresh(
-          options: Options(sendTimeout: _bootstrapTimeout, receiveTimeout: _bootstrapTimeout),
-        );
-        authSession.accessToken = result.accessToken;
-        state = AuthState(isBootstrapping: false, user: result.user);
-        return;
-      } on ApiException catch (e) {
-        // No valid refresh cookie (never logged in, or it genuinely expired/
-        // was revoked) — a normal, expected outcome, not an error. Stop
-        // immediately rather than burning a retry on a result that won't
-        // change.
-        if (e.statusCode == 401) break;
-      } catch (_) {
-        // Any other failure (timeout, connection error, 5xx) — worth one
-        // more attempt before giving up, since it's more likely a slow
-        // cold start than an actual problem.
-      }
-    }
-    state = const AuthState(isBootstrapping: false, user: null);
+    await refreshAccessToken(ref.read(dioProvider));
   }
 
   Future<void> signup(SignupPayload payload) async {
     final result = await _authApi.signup(payload);
     authSession.accessToken = result.accessToken;
-    state = AuthState(isBootstrapping: false, user: result.user);
+    await _sessionCache.save(result.user);
+    state = AuthState(user: result.user);
   }
 
   Future<void> login({required String email, required String password, bool rememberMe = true}) async {
     final result = await _authApi.login(email: email, password: password, rememberMe: rememberMe);
     authSession.accessToken = result.accessToken;
-    state = AuthState(isBootstrapping: false, user: result.user);
+    await _sessionCache.save(result.user);
+    state = AuthState(user: result.user);
   }
 
   /// Returns the dev-only reset link (see `ForgotPasswordResponse` on the
@@ -101,7 +95,8 @@ class AuthController extends Notifier<AuthState> {
     final result = await _authApi.googleAuth(idToken);
     if (!result.needsProfile) {
       authSession.accessToken = result.accessToken;
-      state = AuthState(isBootstrapping: false, user: result.user);
+      await _sessionCache.save(result.user!);
+      state = AuthState(user: result.user);
     }
     return result;
   }
@@ -109,7 +104,8 @@ class AuthController extends Notifier<AuthState> {
   Future<void> completeGoogleProfile(GoogleCompleteProfilePayload payload) async {
     final result = await _authApi.googleCompleteProfile(payload);
     authSession.accessToken = result.accessToken;
-    state = AuthState(isBootstrapping: false, user: result.user);
+    await _sessionCache.save(result.user);
+    state = AuthState(user: result.user);
   }
 
   Future<void> updateProfile({
@@ -122,23 +118,27 @@ class AuthController extends Notifier<AuthState> {
       theme: theme,
       accentColor: accentColor,
     );
-    state = AuthState(isBootstrapping: false, user: updated);
+    await _sessionCache.save(updated);
+    state = AuthState(user: updated);
   }
 
   /// Applies a theme/accent change to local state immediately (before the
   /// PATCH /auth/me round trip resolves) so the UI responds the instant the
   /// user taps an option, exactly like the web app's `setTheme()` call
-  /// preceding its own `persist()` fire-and-forget.
+  /// preceding its own `persist()` fire-and-forget. Not cached here — the
+  /// `updateProfile` call this always precedes/follows does that once the
+  /// server confirms it.
   void applyThemePreview({AppThemeMode? theme, AccentColor? accentColor}) {
     final user = state.user;
     if (user == null) return;
-    state = AuthState(isBootstrapping: false, user: user.copyWithAppearance(theme: theme, accentColor: accentColor));
+    state = AuthState(user: user.copyWithAppearance(theme: theme, accentColor: accentColor));
   }
 
   Future<void> logout() async {
     await _authApi.logout();
     authSession.accessToken = null;
-    state = const AuthState(isBootstrapping: false, user: null);
+    await _sessionCache.clear();
+    state = const AuthState(user: null);
   }
 }
 

@@ -36,23 +36,6 @@ class AuthApi {
     }
   }
 
-  /// Reads the refresh cookie (persisted by the Dio cookie jar, same as the
-  /// browser's httpOnly cookie) and returns a fresh access token — used both
-  /// for silent session restore on app start and by the 401 interceptor.
-  ///
-  /// [options] lets the app-launch bootstrap call ask for a much longer
-  /// timeout than the default (a cold Render free-tier instance can take
-  /// 30-60s+ to spin back up) without changing the timeout every other
-  /// request on the shared Dio instance uses.
-  Future<AuthResult> refresh({Options? options}) async {
-    try {
-      final res = await _dio.post<Map<String, dynamic>>('/auth/refresh', options: options);
-      return AuthResult.fromJson(res.data!);
-    } on DioException catch (e) {
-      throw ApiException.fromDioException(e);
-    }
-  }
-
   Future<void> logout() async {
     try {
       await _dio.post('/auth/logout');

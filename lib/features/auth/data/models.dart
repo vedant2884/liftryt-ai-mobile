@@ -191,6 +191,30 @@ class UserProfile {
         defaultProgressionIncrementKg: defaultProgressionIncrementKg,
       );
 
+  /// Inverse of [fromJson] — used only to persist a display copy of the
+  /// profile locally (see `core/auth/session_cache.dart`), never sent back
+  /// to the server as a request body.
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'email': email,
+        'full_name': fullName,
+        'username': username,
+        'avatar_url': avatarUrl,
+        'google_avatar_url': googleAvatarUrl,
+        'has_password': hasPassword,
+        'has_completed_onboarding': hasCompletedOnboarding,
+        'age': age,
+        'sex': sex.toJson(),
+        'height_cm': heightCm,
+        'goal_weight_kg': goalWeightKg,
+        'activity_level': activityLevel.toJson(),
+        'training_experience': trainingExperience.toJson(),
+        'dietary_preference': dietaryPreference.toJson(),
+        'theme': theme.toJson(),
+        'accent_color': accentColor.toJson(),
+        'default_progression_increment_kg': defaultProgressionIncrementKg,
+      };
+
   factory UserProfile.fromJson(Map<String, dynamic> json) => UserProfile(
         id: json['id'] as String,
         email: json['email'] as String,

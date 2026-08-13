@@ -51,7 +51,7 @@ Future<Dio> createApiClient() async {
         if (error.response?.statusCode == 401 &&
             !alreadyRetried &&
             !_noRefreshRetry.hasMatch(requestPath)) {
-          final newToken = await _refreshAccessToken(dio);
+          final newToken = await refreshAccessToken(dio);
           if (newToken != null) {
             final retryOptions = error.requestOptions
               ..headers['Authorization'] = 'Bearer $newToken'
@@ -72,14 +72,18 @@ Future<Dio> createApiClient() async {
   return dio;
 }
 
-/// Concurrent 401s (several requests firing right as the access token
-/// expires) must share one refresh call rather than each racing their own —
-/// otherwise every refresh after the first would replay an already-rotated,
-/// now-revoked cookie and fail. Same reasoning as the web client's
-/// `refreshInFlight` promise.
+/// Concurrent refresh attempts (several requests firing right as the access
+/// token expires, or the app-launch bootstrap racing an early screen's own
+/// first API call) must share one refresh call rather than each racing
+/// their own — otherwise every refresh after the first would replay an
+/// already-rotated, now-revoked cookie and fail. Same reasoning as the web
+/// client's `refreshInFlight` promise. Exported (not just used by the 401
+/// interceptor above) so `AuthController`'s launch-time bootstrap goes
+/// through this exact same dedup instead of firing a second, independent
+/// `/auth/refresh` call.
 Future<String?>? _refreshInFlight;
 
-Future<String?> _refreshAccessToken(Dio dio) {
+Future<String?> refreshAccessToken(Dio dio) {
   return _refreshInFlight ??= _doRefresh(dio).whenComplete(() {
     _refreshInFlight = null;
   });
