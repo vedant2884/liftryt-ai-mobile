@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Modify this file to customize your launch splash screen -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Fixed dark color, not ?android:colorBackground — the app is
+         dark-first only (see AppTheme, no light theme implemented yet), so
+         this must not follow the system's light/day theme default. -->
+    <item android:drawable="@color/ic_launcher_background" />
+
+    <!-- You can insert your own image assets here -->
+    <!-- <item>
+        <bitmap
+            android:gravity="center"
+            android:src="@mipmap/launch_image" />
+    </item> -->
+</layer-list>
