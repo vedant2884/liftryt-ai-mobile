@@ -39,9 +39,14 @@ class AuthApi {
   /// Reads the refresh cookie (persisted by the Dio cookie jar, same as the
   /// browser's httpOnly cookie) and returns a fresh access token — used both
   /// for silent session restore on app start and by the 401 interceptor.
-  Future<AuthResult> refresh() async {
+  ///
+  /// [options] lets the app-launch bootstrap call ask for a much longer
+  /// timeout than the default (a cold Render free-tier instance can take
+  /// 30-60s+ to spin back up) without changing the timeout every other
+  /// request on the shared Dio instance uses.
+  Future<AuthResult> refresh({Options? options}) async {
     try {
-      final res = await _dio.post<Map<String, dynamic>>('/auth/refresh');
+      final res = await _dio.post<Map<String, dynamic>>('/auth/refresh', options: options);
       return AuthResult.fromJson(res.data!);
     } on DioException catch (e) {
       throw ApiException.fromDioException(e);
@@ -86,10 +91,16 @@ class AuthApi {
     }
   }
 
-  Future<UserProfile> updateProfile({double? defaultProgressionIncrementKg}) async {
+  Future<UserProfile> updateProfile({
+    double? defaultProgressionIncrementKg,
+    AppThemeMode? theme,
+    AccentColor? accentColor,
+  }) async {
     try {
       final res = await _dio.patch<Map<String, dynamic>>('/auth/me', data: {
         'default_progression_increment_kg': ?defaultProgressionIncrementKg,
+        'theme': ?theme?.toJson(),
+        'accent_color': ?accentColor?.toJson(),
       });
       return UserProfile.fromJson(res.data!);
     } on DioException catch (e) {

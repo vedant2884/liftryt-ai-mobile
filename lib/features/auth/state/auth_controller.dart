@@ -1,5 +1,7 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/api/api_exception.dart';
 import '../../../core/api/auth_session.dart';
 import '../../../core/api/providers.dart';
 import '../data/auth_api.dart';
@@ -41,16 +43,37 @@ class AuthController extends Notifier<AuthState> {
     return const AuthState(isBootstrapping: true, user: null);
   }
 
+  /// A cold Render free-tier instance can take 30-60s+ to spin back up (no
+  /// persistent disk on the free plan, so it re-downloads the embedding
+  /// model on every cold start) — well past the app's normal 15s/30s
+  /// request timeouts. Retrying with a much longer timeout here, and only
+  /// ever treating a genuine 401 as "you're actually logged out", is what
+  /// stops a slow cold start from looking identical to a lost session.
+  static const _bootstrapTimeout = Duration(seconds: 45);
+  static const _bootstrapAttempts = 2;
+
   Future<void> _bootstrap() async {
-    try {
-      final result = await _authApi.refresh();
-      authSession.accessToken = result.accessToken;
-      state = AuthState(isBootstrapping: false, user: result.user);
-    } catch (_) {
-      // No valid refresh cookie (never logged in, or it expired/was
-      // revoked) — a normal, expected outcome, not an error.
-      state = const AuthState(isBootstrapping: false, user: null);
+    for (var attempt = 1; attempt <= _bootstrapAttempts; attempt++) {
+      try {
+        final result = await _authApi.refresh(
+          options: Options(sendTimeout: _bootstrapTimeout, receiveTimeout: _bootstrapTimeout),
+        );
+        authSession.accessToken = result.accessToken;
+        state = AuthState(isBootstrapping: false, user: result.user);
+        return;
+      } on ApiException catch (e) {
+        // No valid refresh cookie (never logged in, or it genuinely expired/
+        // was revoked) — a normal, expected outcome, not an error. Stop
+        // immediately rather than burning a retry on a result that won't
+        // change.
+        if (e.statusCode == 401) break;
+      } catch (_) {
+        // Any other failure (timeout, connection error, 5xx) — worth one
+        // more attempt before giving up, since it's more likely a slow
+        // cold start than an actual problem.
+      }
     }
+    state = const AuthState(isBootstrapping: false, user: null);
   }
 
   Future<void> signup(SignupPayload payload) async {
@@ -89,9 +112,27 @@ class AuthController extends Notifier<AuthState> {
     state = AuthState(isBootstrapping: false, user: result.user);
   }
 
-  Future<void> updateProfile({double? defaultProgressionIncrementKg}) async {
-    final updated = await _authApi.updateProfile(defaultProgressionIncrementKg: defaultProgressionIncrementKg);
+  Future<void> updateProfile({
+    double? defaultProgressionIncrementKg,
+    AppThemeMode? theme,
+    AccentColor? accentColor,
+  }) async {
+    final updated = await _authApi.updateProfile(
+      defaultProgressionIncrementKg: defaultProgressionIncrementKg,
+      theme: theme,
+      accentColor: accentColor,
+    );
     state = AuthState(isBootstrapping: false, user: updated);
+  }
+
+  /// Applies a theme/accent change to local state immediately (before the
+  /// PATCH /auth/me round trip resolves) so the UI responds the instant the
+  /// user taps an option, exactly like the web app's `setTheme()` call
+  /// preceding its own `persist()` fire-and-forget.
+  void applyThemePreview({AppThemeMode? theme, AccentColor? accentColor}) {
+    final user = state.user;
+    if (user == null) return;
+    state = AuthState(isBootstrapping: false, user: user.copyWithAppearance(theme: theme, accentColor: accentColor));
   }
 
   Future<void> logout() async {

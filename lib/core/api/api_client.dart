@@ -94,9 +94,16 @@ Future<String?> _doRefresh(Dio dio) async {
     authSession.accessToken = accessToken;
     authSession.onTokenRefreshed?.call(accessToken, user);
     return accessToken;
-  } on DioException {
-    authSession.accessToken = null;
-    authSession.onSessionExpired?.call();
+  } on DioException catch (e) {
+    // Only a genuine 401 here means the refresh cookie itself is invalid or
+    // expired — that's a real "you're logged out". A timeout/connection
+    // error (e.g. a cold Render free-tier instance taking 30-60s+ to spin
+    // back up) is not that, and must not wipe an otherwise-still-valid
+    // session just because this one request couldn't complete in time.
+    if (e.response?.statusCode == 401) {
+      authSession.accessToken = null;
+      authSession.onSessionExpired?.call();
+    }
     return null;
   }
 }
