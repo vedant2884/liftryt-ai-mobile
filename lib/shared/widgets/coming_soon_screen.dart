@@ -33,22 +33,22 @@ class ComingSoonScreen extends StatelessWidget {
                   width: 56,
                   height: 56,
                   decoration: BoxDecoration(
-                    color: AppColors.accent.withValues(alpha: 0.12),
+                    color: context.colors.accent.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.accent.withValues(alpha: 0.4)),
+                    border: Border.all(color: context.colors.accent.withValues(alpha: 0.4)),
                   ),
-                  child: Icon(icon, color: AppColors.accent, size: 28),
+                  child: Icon(icon, color: context.colors.accent, size: 28),
                 ),
                 const SizedBox(height: 20),
                 Text(
                   title,
-                  style: const TextStyle(color: AppColors.ink, fontSize: 20, fontWeight: FontWeight.w600),
+                  style: TextStyle(color: context.colors.ink, fontSize: 20, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   message,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(color: AppColors.inkSecondary, fontSize: 14),
+                  style: TextStyle(color: context.colors.inkSecondary, fontSize: 14),
                 ),
                 if (action != null) ...[
                   const SizedBox(height: 20),

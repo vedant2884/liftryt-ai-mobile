@@ -57,7 +57,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.bg,
+      backgroundColor: context.colors.bg,
       body: Center(
         child: AnimatedBuilder(
           animation: _controller,
@@ -73,7 +73,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: RadialGradient(
-                        colors: [AppColors.accent.withValues(alpha: 0.35), AppColors.accent.withValues(alpha: 0)],
+                        colors: [context.colors.accent.withValues(alpha: 0.35), context.colors.accent.withValues(alpha: 0)],
                       ),
                     ),
                   ),
@@ -93,10 +93,10 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                       opacity: _wordmarkOpacity.value,
                       child: Transform.translate(
                         offset: _wordmarkOffset.value * 20,
-                        child: const Text(
+                        child: Text(
                           'LiftRyt',
                           style: TextStyle(
-                            color: AppColors.ink,
+                            color: context.colors.ink,
                             fontSize: 20,
                             fontWeight: FontWeight.w600,
                             letterSpacing: 0.5,

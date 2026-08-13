@@ -75,7 +75,7 @@ class _MacrosScreenState extends ConsumerState<MacrosScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Calculate targets', style: TextStyle(color: AppColors.ink, fontSize: 14, fontWeight: FontWeight.w600)),
+                      Text('Calculate targets', style: TextStyle(color: context.colors.ink, fontSize: 14, fontWeight: FontWeight.w600)),
                       const SizedBox(height: 10),
                       DropdownButtonFormField<String>(
                         initialValue: _goal,
@@ -109,14 +109,14 @@ class _MacrosScreenState extends ConsumerState<MacrosScreen> {
                 ),
                 if (_active != null) ...[
                   const SizedBox(height: 16),
-                  const Text('Your targets', style: TextStyle(color: AppColors.ink, fontSize: 16, fontWeight: FontWeight.w600)),
+                  Text('Your targets', style: TextStyle(color: context.colors.ink, fontSize: 16, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 10),
                   AppCard(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('${_active!.targetCalories.round()} kcal/day',
-                            style: const TextStyle(color: AppColors.accent, fontSize: 22, fontWeight: FontWeight.w600)),
+                            style: TextStyle(color: context.colors.accent, fontSize: 22, fontWeight: FontWeight.w600)),
                         const SizedBox(height: 12),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -126,9 +126,9 @@ class _MacrosScreenState extends ConsumerState<MacrosScreen> {
                             _macroTile('Fat', _active!.targetFatG),
                           ],
                         ),
-                        const Divider(color: AppColors.line, height: 24),
+                        Divider(color: context.colors.line, height: 24),
                         Text('BMR: ${_active!.bmr.round()} · TDEE: ${_active!.tdee.round()}',
-                            style: const TextStyle(color: AppColors.inkMuted, fontSize: 12)),
+                            style: TextStyle(color: context.colors.inkMuted, fontSize: 12)),
                       ],
                     ),
                   ),
@@ -142,9 +142,9 @@ class _MacrosScreenState extends ConsumerState<MacrosScreen> {
   Widget _macroTile(String label, double grams) {
     return Column(
       children: [
-        Text('${grams.round()}g', style: const TextStyle(color: AppColors.ink, fontSize: 16, fontWeight: FontWeight.w600)),
+        Text('${grams.round()}g', style: TextStyle(color: context.colors.ink, fontSize: 16, fontWeight: FontWeight.w600)),
         const SizedBox(height: 2),
-        Text(label, style: const TextStyle(color: AppColors.inkMuted, fontSize: 11)),
+        Text(label, style: TextStyle(color: context.colors.inkMuted, fontSize: 11)),
       ],
     );
   }

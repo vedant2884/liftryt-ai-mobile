@@ -71,9 +71,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Text(
+                  Text(
                     'Log in',
-                    style: TextStyle(fontSize: 26, fontWeight: FontWeight.w600, color: AppColors.ink),
+                    style: TextStyle(fontSize: 26, fontWeight: FontWeight.w600, color: context.colors.ink),
                   ),
                   const SizedBox(height: 20),
                   if (_error != null) ...[
@@ -108,10 +108,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             Checkbox(
                               value: _rememberMe,
                               onChanged: (v) => setState(() => _rememberMe = v ?? true),
-                              activeColor: AppColors.accent,
+                              activeColor: context.colors.accent,
                               visualDensity: VisualDensity.compact,
                             ),
-                            const Text('Remember me', style: TextStyle(color: AppColors.inkSecondary, fontSize: 13)),
+                            Text('Remember me', style: TextStyle(color: context.colors.inkSecondary, fontSize: 13)),
                           ],
                         ),
                       ),
@@ -131,12 +131,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   const SizedBox(height: 16),
                   Row(
                     children: [
-                      const Expanded(child: Divider(color: AppColors.line)),
+                      Expanded(child: Divider(color: context.colors.line)),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 10),
-                        child: Text('or', style: TextStyle(color: AppColors.inkMuted, fontSize: 12)),
+                        child: Text('or', style: TextStyle(color: context.colors.inkMuted, fontSize: 12)),
                       ),
-                      const Expanded(child: Divider(color: AppColors.line)),
+                      Expanded(child: Divider(color: context.colors.line)),
                     ],
                   ),
                   const SizedBox(height: 16),
@@ -145,12 +145,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text('No account? ', style: TextStyle(color: AppColors.inkSecondary, fontSize: 14)),
+                      Text('No account? ', style: TextStyle(color: context.colors.inkSecondary, fontSize: 14)),
                       GestureDetector(
                         onTap: widget.onGoToSignup,
-                        child: const Text(
+                        child: Text(
                           'Sign up',
-                          style: TextStyle(color: AppColors.accent, fontSize: 14, fontWeight: FontWeight.w500),
+                          style: TextStyle(color: context.colors.accent, fontSize: 14, fontWeight: FontWeight.w500),
                         ),
                       ),
                     ],

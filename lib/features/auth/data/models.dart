@@ -91,13 +91,25 @@ enum DietaryPreference {
       };
 }
 
-enum ThemeMode {
+// Named AppThemeMode (not ThemeMode) so it doesn't collide with Flutter's
+// own material.dart ThemeMode (light/dark/system) — app.dart needs both in
+// scope at once to map one onto the other for MaterialApp.themeMode.
+enum AppThemeMode {
   light,
-  dark;
+  dark,
+  system;
 
-  static ThemeMode fromJson(String value) => value == 'light' ? ThemeMode.light : ThemeMode.dark;
+  static AppThemeMode fromJson(String value) => switch (value) {
+        'light' => AppThemeMode.light,
+        'system' => AppThemeMode.system,
+        _ => AppThemeMode.dark,
+      };
 
-  String toJson() => this == ThemeMode.light ? 'light' : 'dark';
+  String toJson() => switch (this) {
+        AppThemeMode.light => 'light',
+        AppThemeMode.system => 'system',
+        AppThemeMode.dark => 'dark',
+      };
 }
 
 enum AccentColor {
@@ -126,7 +138,7 @@ class UserProfile {
   final ActivityLevel activityLevel;
   final ExperienceLevel trainingExperience;
   final DietaryPreference dietaryPreference;
-  final ThemeMode theme;
+  final AppThemeMode theme;
   final AccentColor accentColor;
   final double defaultProgressionIncrementKg;
 
@@ -155,6 +167,30 @@ class UserProfile {
   /// mirroring the web app's same priority (see `auth.py`'s upload_avatar).
   String? get displayAvatarUrl => avatarUrl ?? googleAvatarUrl;
 
+  /// Narrow copyWith (just the appearance fields) for an optimistic local
+  /// update the instant the user taps a theme/accent option, ahead of the
+  /// PATCH /auth/me round trip actually confirming it server-side.
+  UserProfile copyWithAppearance({AppThemeMode? theme, AccentColor? accentColor}) => UserProfile(
+        id: id,
+        email: email,
+        fullName: fullName,
+        username: username,
+        avatarUrl: avatarUrl,
+        googleAvatarUrl: googleAvatarUrl,
+        hasPassword: hasPassword,
+        hasCompletedOnboarding: hasCompletedOnboarding,
+        age: age,
+        sex: sex,
+        heightCm: heightCm,
+        goalWeightKg: goalWeightKg,
+        activityLevel: activityLevel,
+        trainingExperience: trainingExperience,
+        dietaryPreference: dietaryPreference,
+        theme: theme ?? this.theme,
+        accentColor: accentColor ?? this.accentColor,
+        defaultProgressionIncrementKg: defaultProgressionIncrementKg,
+      );
+
   factory UserProfile.fromJson(Map<String, dynamic> json) => UserProfile(
         id: json['id'] as String,
         email: json['email'] as String,
@@ -171,7 +207,7 @@ class UserProfile {
         activityLevel: ActivityLevel.fromJson(json['activity_level'] as String),
         trainingExperience: ExperienceLevel.fromJson(json['training_experience'] as String),
         dietaryPreference: DietaryPreference.fromJson(json['dietary_preference'] as String),
-        theme: ThemeMode.fromJson(json['theme'] as String),
+        theme: AppThemeMode.fromJson(json['theme'] as String),
         accentColor: AccentColor.fromJson(json['accent_color'] as String),
         defaultProgressionIncrementKg: (json['default_progression_increment_kg'] as num).toDouble(),
       );

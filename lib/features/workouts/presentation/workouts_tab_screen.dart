@@ -109,13 +109,13 @@ class _WorkoutsTabScreenState extends ConsumerState<WorkoutsTabScreen> {
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: _loadWorkouts,
-          color: AppColors.accent,
-          backgroundColor: AppColors.surface,
+          color: context.colors.accent,
+          backgroundColor: context.colors.surface,
           child: ListView(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
             children: [
-              const Text('Workouts',
-                  style: TextStyle(color: AppColors.ink, fontSize: 24, fontWeight: FontWeight.w600)),
+              Text('Workouts',
+                  style: TextStyle(color: context.colors.ink, fontSize: 24, fontWeight: FontWeight.w600)),
               const SizedBox(height: 16),
               if (!isActive && _activeSplit?.todayDay != null) ...[
                 _SplitCard(plan: _activeSplit!),
@@ -123,8 +123,8 @@ class _WorkoutsTabScreenState extends ConsumerState<WorkoutsTabScreen> {
               ],
               if (isActive)
                 AppCard(
-                  borderColor: AppColors.accent.withValues(alpha: 0.4),
-                  backgroundColor: AppColors.accent.withValues(alpha: 0.1),
+                  borderColor: context.colors.accent.withValues(alpha: 0.4),
+                  backgroundColor: context.colors.accent.withValues(alpha: 0.1),
                   onTap: () => openActiveWorkout(context),
                   child: Row(
                     children: [
@@ -132,17 +132,17 @@ class _WorkoutsTabScreenState extends ConsumerState<WorkoutsTabScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Workout in progress',
-                                style: TextStyle(color: AppColors.accent, fontSize: 12)),
+                            Text('Workout in progress',
+                                style: TextStyle(color: context.colors.accent, fontSize: 12)),
                             const SizedBox(height: 2),
                             Text(activeName,
-                                style: const TextStyle(color: AppColors.ink, fontSize: 15, fontWeight: FontWeight.w600)),
+                                style: TextStyle(color: context.colors.ink, fontSize: 15, fontWeight: FontWeight.w600)),
                           ],
                         ),
                       ),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                        decoration: BoxDecoration(color: AppColors.accent, borderRadius: BorderRadius.circular(8)),
+                        decoration: BoxDecoration(color: context.colors.accent, borderRadius: BorderRadius.circular(8)),
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -160,8 +160,8 @@ class _WorkoutsTabScreenState extends ConsumerState<WorkoutsTabScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Start a workout',
-                          style: TextStyle(color: AppColors.ink, fontSize: 14, fontWeight: FontWeight.w600)),
+                      Text('Start a workout',
+                          style: TextStyle(color: context.colors.ink, fontSize: 14, fontWeight: FontWeight.w600)),
                       const SizedBox(height: 10),
                       Wrap(
                         spacing: 6,
@@ -198,7 +198,7 @@ class _WorkoutsTabScreenState extends ConsumerState<WorkoutsTabScreen> {
                           onPressed: () => setState(() => _pickingPrevious = !_pickingPrevious),
                           icon: const Icon(Icons.history_rounded, size: 14),
                           label: const Text('Use a previous workout instead', style: TextStyle(fontSize: 12)),
-                          style: TextButton.styleFrom(foregroundColor: AppColors.inkSecondary, padding: EdgeInsets.zero),
+                          style: TextButton.styleFrom(foregroundColor: context.colors.inkSecondary, padding: EdgeInsets.zero),
                         ),
                       ],
                       if (_pickingPrevious)
@@ -206,7 +206,7 @@ class _WorkoutsTabScreenState extends ConsumerState<WorkoutsTabScreen> {
                           margin: const EdgeInsets.only(top: 4),
                           constraints: const BoxConstraints(maxHeight: 200),
                           decoration: BoxDecoration(
-                            border: Border.all(color: AppColors.line),
+                            border: Border.all(color: context.colors.line),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: ListView(
@@ -217,7 +217,7 @@ class _WorkoutsTabScreenState extends ConsumerState<WorkoutsTabScreen> {
                                   dense: true,
                                   title: Text(w.name, style: const TextStyle(fontSize: 13)),
                                   trailing: Text(_formatDate(w.performedAt),
-                                      style: const TextStyle(color: AppColors.inkMuted, fontSize: 11)),
+                                      style: TextStyle(color: context.colors.inkMuted, fontSize: 11)),
                                   onTap: () => _handleStart(w.name, copyFromId: w.id),
                                 ),
                             ],
@@ -227,11 +227,11 @@ class _WorkoutsTabScreenState extends ConsumerState<WorkoutsTabScreen> {
                   ),
                 ),
               const SizedBox(height: 20),
-              const Row(
+              Row(
                 children: [
-                  Icon(Icons.history_rounded, color: AppColors.accent, size: 16),
-                  SizedBox(width: 6),
-                  Text('History', style: TextStyle(color: AppColors.ink, fontSize: 16, fontWeight: FontWeight.w600)),
+                  Icon(Icons.history_rounded, color: context.colors.accent, size: 16),
+                  const SizedBox(width: 6),
+                  Text('History', style: TextStyle(color: context.colors.ink, fontSize: 16, fontWeight: FontWeight.w600)),
                 ],
               ),
               const SizedBox(height: 10),
@@ -241,10 +241,10 @@ class _WorkoutsTabScreenState extends ConsumerState<WorkoutsTabScreen> {
                   child: Center(child: CircularProgressIndicator()),
                 )
               else if (_workouts.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 24),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
                   child: Center(
-                    child: Text('No workouts logged yet.', style: TextStyle(color: AppColors.inkMuted)),
+                    child: Text('No workouts logged yet.', style: TextStyle(color: context.colors.inkMuted)),
                   ),
                 )
               else
@@ -260,15 +260,15 @@ class _WorkoutsTabScreenState extends ConsumerState<WorkoutsTabScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(w.name, overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(color: AppColors.ink, fontSize: 14, fontWeight: FontWeight.w600)),
+                                    style: TextStyle(color: context.colors.ink, fontSize: 14, fontWeight: FontWeight.w600)),
                                 const SizedBox(height: 2),
                                 Text(_formatDate(w.performedAt),
-                                    style: const TextStyle(color: AppColors.inkMuted, fontSize: 12)),
+                                    style: TextStyle(color: context.colors.inkMuted, fontSize: 12)),
                               ],
                             ),
                           ),
                           Text('${w.setCount} sets · ${w.totalVolumeKg.round()} kg',
-                              style: const TextStyle(color: AppColors.inkSecondary, fontSize: 12)),
+                              style: TextStyle(color: context.colors.inkSecondary, fontSize: 12)),
                         ],
                       ),
                     ),
@@ -296,12 +296,12 @@ class _SuggestionChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          color: selected ? AppColors.accent.withValues(alpha: 0.15) : null,
-          border: Border.all(color: selected ? AppColors.accent : AppColors.lineStrong),
+          color: selected ? context.colors.accent.withValues(alpha: 0.15) : null,
+          border: Border.all(color: selected ? context.colors.accent : context.colors.lineStrong),
           borderRadius: BorderRadius.circular(999),
         ),
         child: Text(label,
-            style: TextStyle(color: selected ? AppColors.accent : AppColors.inkSecondary, fontSize: 12)),
+            style: TextStyle(color: selected ? context.colors.accent : context.colors.inkSecondary, fontSize: 12)),
       ),
     );
   }
@@ -322,14 +322,14 @@ class _SplitCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Your split · ${plan.splitType}', style: const TextStyle(color: AppColors.inkMuted, fontSize: 12)),
+          Text('Your split · ${plan.splitType}', style: TextStyle(color: context.colors.inkMuted, fontSize: 12)),
           const SizedBox(height: 4),
           Text('Today: ${today.label}',
-              style: const TextStyle(color: AppColors.ink, fontSize: 16, fontWeight: FontWeight.w600)),
+              style: TextStyle(color: context.colors.ink, fontSize: 16, fontWeight: FontWeight.w600)),
           if (upcoming.isNotEmpty) ...[
             const SizedBox(height: 2),
             Text('Up next: ${upcoming.map((d) => d.label).join(', ')}',
-                style: const TextStyle(color: AppColors.inkMuted, fontSize: 11)),
+                style: TextStyle(color: context.colors.inkMuted, fontSize: 11)),
           ],
         ],
       ),

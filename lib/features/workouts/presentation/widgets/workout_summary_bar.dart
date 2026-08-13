@@ -61,9 +61,9 @@ class _WorkoutSummaryBarState extends State<WorkoutSummaryBar> {
     final elapsed = _now.difference(widget.startedAt).inSeconds.clamp(0, 1 << 30);
 
     return DecoratedBox(
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        border: Border(top: BorderSide(color: AppColors.line)),
+      decoration: BoxDecoration(
+        color: context.colors.surface,
+        border: Border(top: BorderSide(color: context.colors.line)),
       ),
       child: SafeArea(
         top: false,
@@ -100,10 +100,10 @@ class _WorkoutSummaryBarState extends State<WorkoutSummaryBar> {
         children: [
           TextSpan(
             text: value,
-            style: const TextStyle(color: AppColors.ink, fontSize: 14, fontWeight: FontWeight.w600),
+            style: TextStyle(color: context.colors.ink, fontSize: 14, fontWeight: FontWeight.w600),
           ),
           if (suffix != null)
-            TextSpan(text: ' $suffix', style: const TextStyle(color: AppColors.inkMuted, fontSize: 13)),
+            TextSpan(text: ' $suffix', style: TextStyle(color: context.colors.inkMuted, fontSize: 13)),
         ],
       ),
     );

@@ -2,21 +2,42 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/theme/app_theme.dart';
+import 'core/theme/theme_prefs.dart';
+import 'features/auth/data/models.dart';
 import 'features/auth/presentation/auth_flow.dart';
 import 'features/auth/state/auth_controller.dart';
 import 'features/navigation/presentation/main_shell.dart';
 import 'features/splash/presentation/splash_screen.dart';
 
-class LiftRytApp extends StatelessWidget {
+extension _FlutterThemeMode on AppThemeMode {
+  ThemeMode get flutter => switch (this) {
+        AppThemeMode.light => ThemeMode.light,
+        AppThemeMode.dark => ThemeMode.dark,
+        AppThemeMode.system => ThemeMode.system,
+      };
+}
+
+class LiftRytApp extends ConsumerWidget {
   const LiftRytApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // The authenticated user's saved preference wins once it's known (mirrors
+    // web's App.tsx overwriting the theme store from the server on login);
+    // before that (splash/login/signup), fall back to whatever was last
+    // cached locally, so returning users don't flash back to the default.
+    final user = ref.watch(authControllerProvider).user;
+    final prefs = ref.watch(themePrefsProvider);
+    final themeMode = user?.theme ?? prefs.themeMode;
+    final accentColor = user?.accentColor ?? prefs.accentColor;
+    final emeraldAccent = accentColor == AccentColor.emerald;
+
     return MaterialApp(
       title: 'LiftRyt',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.dark,
-      darkTheme: AppTheme.dark,
+      theme: AppTheme.build(brightness: Brightness.light, emeraldAccent: emeraldAccent),
+      darkTheme: AppTheme.build(brightness: Brightness.dark, emeraldAccent: emeraldAccent),
+      themeMode: themeMode.flutter,
       home: const AuthGate(),
     );
   }
@@ -47,9 +68,9 @@ class _AuthGateState extends ConsumerState<AuthGate> {
     final auth = ref.watch(authControllerProvider);
 
     if (auth.isBootstrapping) {
-      return const Scaffold(
+      return Scaffold(
         body: Center(
-          child: Text('Loading...', style: TextStyle(color: AppColors.inkSecondary)),
+          child: Text('Loading...', style: TextStyle(color: context.colors.inkSecondary)),
         ),
       );
     }

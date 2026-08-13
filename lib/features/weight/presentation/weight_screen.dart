@@ -91,8 +91,8 @@ class _WeightScreenState extends ConsumerState<WeightScreen> {
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
               onRefresh: _load,
-              color: AppColors.accent,
-              backgroundColor: AppColors.surface,
+              color: context.colors.accent,
+              backgroundColor: context.colors.surface,
               child: ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
@@ -104,10 +104,10 @@ class _WeightScreenState extends ConsumerState<WeightScreen> {
                     _chartCard(_analytics!.series),
                   ],
                   const SizedBox(height: 20),
-                  const Text('History', style: TextStyle(color: AppColors.ink, fontSize: 16, fontWeight: FontWeight.w600)),
+                  Text('History', style: TextStyle(color: context.colors.ink, fontSize: 16, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 10),
                   if (_logs.isEmpty)
-                    const Text('No weight logged yet.', style: TextStyle(color: AppColors.inkMuted, fontSize: 13))
+                    Text('No weight logged yet.', style: TextStyle(color: context.colors.inkMuted, fontSize: 13))
                   else
                     for (final log in _logs)
                       Padding(
@@ -121,15 +121,15 @@ class _WeightScreenState extends ConsumerState<WeightScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text('${log.weightKg} kg',
-                                        style: const TextStyle(color: AppColors.ink, fontSize: 14, fontWeight: FontWeight.w600)),
-                                    Text(_fmtDate(log.loggedAt), style: const TextStyle(color: AppColors.inkMuted, fontSize: 11)),
+                                        style: TextStyle(color: context.colors.ink, fontSize: 14, fontWeight: FontWeight.w600)),
+                                    Text(_fmtDate(log.loggedAt), style: TextStyle(color: context.colors.inkMuted, fontSize: 11)),
                                   ],
                                 ),
                               ),
                               IconButton(
                                 onPressed: () => _deleteLog(log.id),
                                 icon: const Icon(Icons.delete_outline_rounded, size: 18),
-                                color: AppColors.inkMuted,
+                                color: context.colors.inkMuted,
                               ),
                             ],
                           ),
@@ -147,17 +147,17 @@ class _WeightScreenState extends ConsumerState<WeightScreen> {
     final rate = _analytics?.trend.rateKgPerWeek;
     return AppCard(
       child: current == null
-          ? const Text('No weight logged yet.', style: TextStyle(color: AppColors.inkSecondary, fontSize: 14))
+          ? Text('No weight logged yet.', style: TextStyle(color: context.colors.inkSecondary, fontSize: 14))
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Current weight', style: TextStyle(color: AppColors.inkMuted, fontSize: 12)),
+                Text('Current weight', style: TextStyle(color: context.colors.inkMuted, fontSize: 12)),
                 const SizedBox(height: 4),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.baseline,
                   textBaseline: TextBaseline.alphabetic,
                   children: [
-                    Text('$current kg', style: const TextStyle(color: AppColors.ink, fontSize: 24, fontWeight: FontWeight.w600)),
+                    Text('$current kg', style: TextStyle(color: context.colors.ink, fontSize: 24, fontWeight: FontWeight.w600)),
                     if (rate != null) ...[
                       const SizedBox(width: 10),
                       Text('${rate > 0 ? '+' : ''}${rate.toStringAsFixed(2)} kg/wk',
@@ -202,7 +202,7 @@ class _WeightScreenState extends ConsumerState<WeightScreen> {
         child: LineChart(
           LineChartData(
             gridData: FlGridData(
-                show: true, drawVerticalLine: false, getDrawingHorizontalLine: (_) => FlLine(color: AppColors.line, strokeWidth: 1)),
+                show: true, drawVerticalLine: false, getDrawingHorizontalLine: (_) => FlLine(color: context.colors.line, strokeWidth: 1)),
             titlesData: FlTitlesData(
               topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
               rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -211,7 +211,7 @@ class _WeightScreenState extends ConsumerState<WeightScreen> {
                     showTitles: true,
                     reservedSize: 36,
                     getTitlesWidget: (v, meta) =>
-                        Text(v.round().toString(), style: const TextStyle(color: AppColors.inkMuted, fontSize: 10))),
+                        Text(v.round().toString(), style: TextStyle(color: context.colors.inkMuted, fontSize: 10))),
               ),
               bottomTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
             ),
@@ -220,10 +220,10 @@ class _WeightScreenState extends ConsumerState<WeightScreen> {
               LineChartBarData(
                 spots: spots,
                 isCurved: true,
-                color: AppColors.accent,
+                color: context.colors.accent,
                 barWidth: 2,
                 dotData: const FlDotData(show: false),
-                belowBarData: BarAreaData(show: true, color: AppColors.accent.withValues(alpha: 0.08)),
+                belowBarData: BarAreaData(show: true, color: context.colors.accent.withValues(alpha: 0.08)),
               ),
             ],
           ),

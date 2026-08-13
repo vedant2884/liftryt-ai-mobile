@@ -94,12 +94,12 @@ class _GoogleCompleteProfileScreenState extends ConsumerState<GoogleCompleteProf
               children: [
                 Text(
                   firstName.isEmpty ? 'Almost there' : 'Almost there, $firstName',
-                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: AppColors.ink),
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: context.colors.ink),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'Signed in as ${widget.pending.email}. Just a few details so the coach can calculate your targets.',
-                  style: const TextStyle(color: AppColors.inkMuted, fontSize: 13),
+                  style: TextStyle(color: context.colors.inkMuted, fontSize: 13),
                 ),
                 const SizedBox(height: 20),
                 if (_error != null) ...[

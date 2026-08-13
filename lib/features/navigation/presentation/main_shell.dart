@@ -40,9 +40,9 @@ class MainShell extends ConsumerWidget {
     return Scaffold(
       body: IndexedStack(index: selected, children: _screens),
       bottomNavigationBar: DecoratedBox(
-        decoration: const BoxDecoration(
-          color: AppColors.surface,
-          border: Border(top: BorderSide(color: AppColors.line)),
+        decoration: BoxDecoration(
+          color: context.colors.surface,
+          border: Border(top: BorderSide(color: context.colors.line)),
         ),
         child: SafeArea(
           child: SizedBox(
@@ -82,7 +82,7 @@ class _TabButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = selected ? AppColors.accent : AppColors.inkMuted;
+    final color = selected ? context.colors.accent : context.colors.inkMuted;
     return InkWell(
       onTap: onTap,
       child: Column(

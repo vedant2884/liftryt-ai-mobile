@@ -105,8 +105,8 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen> {
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: _refresh,
-          color: AppColors.accent,
-          backgroundColor: AppColors.surface,
+          color: context.colors.accent,
+          backgroundColor: context.colors.surface,
           child: FutureBuilder<_Data>(
             future: _future,
             builder: (context, snapshot) {
@@ -127,7 +127,7 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen> {
               return ListView(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
                 children: [
-                  const Text('Progress', style: TextStyle(color: AppColors.ink, fontSize: 24, fontWeight: FontWeight.w600)),
+                  Text('Progress', style: TextStyle(color: context.colors.ink, fontSize: 24, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 16),
                   _sectionTitle(Icons.local_fire_department_rounded, 'Overview'),
                   _overviewGrid(data.overview),
@@ -156,9 +156,9 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen> {
         padding: const EdgeInsets.only(bottom: 10),
         child: Row(
           children: [
-            Icon(icon, color: AppColors.accent, size: 17),
+            Icon(icon, color: context.colors.accent, size: 17),
             const SizedBox(width: 6),
-            Text(title, style: const TextStyle(color: AppColors.ink, fontSize: 16, fontWeight: FontWeight.w600)),
+            Text(title, style: TextStyle(color: context.colors.ink, fontSize: 16, fontWeight: FontWeight.w600)),
           ],
         ),
       );
@@ -188,11 +188,11 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(label, style: const TextStyle(color: AppColors.inkMuted, fontSize: 11)),
+                Text(label, style: TextStyle(color: context.colors.inkMuted, fontSize: 11)),
                 const SizedBox(height: 4),
                 Text(value,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: AppColors.ink, fontSize: 16, fontWeight: FontWeight.w600)),
+                    style: TextStyle(color: context.colors.ink, fontSize: 16, fontWeight: FontWeight.w600)),
               ],
             ),
           ),
@@ -202,8 +202,8 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen> {
 
   Widget _prList(List<PersonalRecord> prs) {
     if (prs.isEmpty) {
-      return const Text('No PRs yet — your first logged set on any exercise counts.',
-          style: TextStyle(color: AppColors.inkMuted, fontSize: 13));
+      return Text('No PRs yet — your first logged set on any exercise counts.',
+          style: TextStyle(color: context.colors.inkMuted, fontSize: 13));
     }
     return Column(
       children: [
@@ -212,8 +212,8 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen> {
             padding: const EdgeInsets.only(bottom: 8),
             child: AppCard(
               padding: const EdgeInsets.all(12),
-              borderColor: _selectedExerciseId == pr.exerciseId ? AppColors.accent : AppColors.line,
-              backgroundColor: _selectedExerciseId == pr.exerciseId ? AppColors.accent.withValues(alpha: 0.06) : null,
+              borderColor: _selectedExerciseId == pr.exerciseId ? context.colors.accent : context.colors.line,
+              backgroundColor: _selectedExerciseId == pr.exerciseId ? context.colors.accent.withValues(alpha: 0.06) : null,
               onTap: () => _selectExercise(pr.exerciseId),
               child: Row(
                 children: [
@@ -222,15 +222,15 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(pr.exerciseName, overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(color: AppColors.ink, fontSize: 14, fontWeight: FontWeight.w600)),
+                            style: TextStyle(color: context.colors.ink, fontSize: 14, fontWeight: FontWeight.w600)),
                         const SizedBox(height: 2),
                         Text('PR achieved ${_fmtDate(pr.performedAt)}',
-                            style: const TextStyle(color: AppColors.inkMuted, fontSize: 11)),
+                            style: TextStyle(color: context.colors.inkMuted, fontSize: 11)),
                       ],
                     ),
                   ),
                   Text('${pr.weightKg} kg × ${pr.reps}',
-                      style: const TextStyle(color: AppColors.accent, fontSize: 15, fontWeight: FontWeight.w600)),
+                      style: TextStyle(color: context.colors.accent, fontSize: 15, fontWeight: FontWeight.w600)),
                 ],
               ),
             ),
@@ -241,8 +241,8 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen> {
 
   Widget _progressionSection(List<PersonalRecord> prs) {
     if (prs.isEmpty) {
-      return const Text('Log a few sessions on an exercise to see it progress here.',
-          style: TextStyle(color: AppColors.inkMuted, fontSize: 13));
+      return Text('Log a few sessions on an exercise to see it progress here.',
+          style: TextStyle(color: context.colors.inkMuted, fontSize: 13));
     }
     return AppCard(
       child: Column(
@@ -265,11 +265,11 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen> {
             if (_progression!.series.length > 1)
               SizedBox(height: 180, child: _progressionChart(_progression!.series))
             else
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 32),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 32),
                 child: Center(
                   child: Text('Log this exercise again to start a trend line.',
-                      style: TextStyle(color: AppColors.inkMuted, fontSize: 13)),
+                      style: TextStyle(color: context.colors.inkMuted, fontSize: 13)),
                 ),
               ),
             const SizedBox(height: 14),
@@ -296,14 +296,14 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen> {
         gridData: FlGridData(
           show: true,
           drawVerticalLine: false,
-          getDrawingHorizontalLine: (_) => FlLine(color: AppColors.line, strokeWidth: 1),
+          getDrawingHorizontalLine: (_) => FlLine(color: context.colors.line, strokeWidth: 1),
         ),
         titlesData: FlTitlesData(
           topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
           rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
           leftTitles: AxisTitles(
             sideTitles: SideTitles(showTitles: true, reservedSize: 36, getTitlesWidget: (v, meta) {
-              return Text(v.round().toString(), style: const TextStyle(color: AppColors.inkMuted, fontSize: 10));
+              return Text(v.round().toString(), style: TextStyle(color: context.colors.inkMuted, fontSize: 10));
             }),
           ),
           bottomTitles: AxisTitles(
@@ -316,7 +316,7 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen> {
                 if (i < 0 || i >= series.length) return const SizedBox.shrink();
                 return Padding(
                   padding: const EdgeInsets.only(top: 4),
-                  child: Text(_fmtDate(series[i].date), style: const TextStyle(color: AppColors.inkMuted, fontSize: 9)),
+                  child: Text(_fmtDate(series[i].date), style: TextStyle(color: context.colors.inkMuted, fontSize: 9)),
                 );
               },
             ),
@@ -327,18 +327,18 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen> {
           LineChartBarData(
             spots: spots,
             isCurved: true,
-            color: AppColors.accent,
+            color: context.colors.accent,
             barWidth: 2,
             dotData: const FlDotData(show: true),
-            belowBarData: BarAreaData(show: true, color: AppColors.accent.withValues(alpha: 0.08)),
+            belowBarData: BarAreaData(show: true, color: context.colors.accent.withValues(alpha: 0.08)),
           ),
         ],
         lineTouchData: LineTouchData(
           touchTooltipData: LineTouchTooltipData(
-            getTooltipColor: (_) => AppColors.surface,
+            getTooltipColor: (_) => context.colors.surface,
             getTooltipItems: (spots) => spots.map((s) {
               final point = series[s.x.round()];
-              return LineTooltipItem('${point.weightKg} kg', const TextStyle(color: AppColors.ink, fontSize: 11));
+              return LineTooltipItem('${point.weightKg} kg', TextStyle(color: context.colors.ink, fontSize: 11));
             }).toList(),
           ),
         ),
@@ -366,15 +366,15 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen> {
         for (final (label, value) in stats)
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(color: AppColors.bg, borderRadius: BorderRadius.circular(8)),
+            decoration: BoxDecoration(color: context.colors.bg, borderRadius: BorderRadius.circular(8)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(label, style: const TextStyle(color: AppColors.inkMuted, fontSize: 9)),
+                Text(label, style: TextStyle(color: context.colors.inkMuted, fontSize: 9)),
                 const SizedBox(height: 2),
                 Text(value, overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: AppColors.ink, fontSize: 12, fontWeight: FontWeight.w600)),
+                    style: TextStyle(color: context.colors.ink, fontSize: 12, fontWeight: FontWeight.w600)),
               ],
             ),
           ),
@@ -397,12 +397,12 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Weekly volume', style: TextStyle(color: AppColors.inkSecondary, fontSize: 13, fontWeight: FontWeight.w600)),
+              Text('Weekly volume', style: TextStyle(color: context.colors.inkSecondary, fontSize: 13, fontWeight: FontWeight.w600)),
               const SizedBox(height: 10),
               if (weekly.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 24),
-                  child: Center(child: Text('Not enough data yet.', style: TextStyle(color: AppColors.inkMuted, fontSize: 12))),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  child: Center(child: Text('Not enough data yet.', style: TextStyle(color: context.colors.inkMuted, fontSize: 12))),
                 )
               else
                 SizedBox(
@@ -420,7 +420,7 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen> {
                       barGroups: [
                         for (var i = 0; i < weekly.length; i++)
                           BarChartGroupData(x: i, barRods: [
-                            BarChartRodData(toY: weekly[i].volumeKg, color: AppColors.accent, width: 12,
+                            BarChartRodData(toY: weekly[i].volumeKg, color: context.colors.accent, width: 12,
                                 borderRadius: const BorderRadius.vertical(top: Radius.circular(3))),
                           ]),
                       ],
@@ -435,10 +435,10 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Volume by muscle', style: TextStyle(color: AppColors.inkSecondary, fontSize: 13, fontWeight: FontWeight.w600)),
+              Text('Volume by muscle', style: TextStyle(color: context.colors.inkSecondary, fontSize: 13, fontWeight: FontWeight.w600)),
               const SizedBox(height: 10),
               if (topMuscles.isEmpty)
-                const Text('Not enough data yet.', style: TextStyle(color: AppColors.inkMuted, fontSize: 12))
+                Text('Not enough data yet.', style: TextStyle(color: context.colors.inkMuted, fontSize: 12))
               else
                 for (final entry in topMuscles)
                   Padding(
@@ -449,8 +449,8 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(_humanize(entry.key), style: const TextStyle(color: AppColors.inkSecondary, fontSize: 12)),
-                            Text('${entry.value.round()} kg', style: const TextStyle(color: AppColors.inkMuted, fontSize: 11)),
+                            Text(_humanize(entry.key), style: TextStyle(color: context.colors.inkSecondary, fontSize: 12)),
+                            Text('${entry.value.round()} kg', style: TextStyle(color: context.colors.inkMuted, fontSize: 11)),
                           ],
                         ),
                         const SizedBox(height: 4),
@@ -459,8 +459,8 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen> {
                           child: LinearProgressIndicator(
                             value: entry.value / maxMuscleVolume,
                             minHeight: 5,
-                            backgroundColor: AppColors.surfaceHover,
-                            valueColor: const AlwaysStoppedAnimation(AppColors.accent),
+                            backgroundColor: context.colors.surfaceHover,
+                            valueColor: AlwaysStoppedAnimation(context.colors.accent),
                           ),
                         ),
                       ],
@@ -475,7 +475,7 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen> {
 
   Widget _historyList(List<WorkoutSummary> history) {
     if (history.isEmpty) {
-      return const Text('No workouts logged yet.', style: TextStyle(color: AppColors.inkMuted, fontSize: 13));
+      return Text('No workouts logged yet.', style: TextStyle(color: context.colors.inkMuted, fontSize: 13));
     }
     return Column(
       children: [
@@ -491,13 +491,13 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(w.name, overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(color: AppColors.ink, fontSize: 13, fontWeight: FontWeight.w600)),
-                        Text(_fmtDate(w.performedAt), style: const TextStyle(color: AppColors.inkMuted, fontSize: 11)),
+                            style: TextStyle(color: context.colors.ink, fontSize: 13, fontWeight: FontWeight.w600)),
+                        Text(_fmtDate(w.performedAt), style: TextStyle(color: context.colors.inkMuted, fontSize: 11)),
                       ],
                     ),
                   ),
                   Text('${w.setCount} sets · ${w.totalVolumeKg.round()} kg',
-                      style: const TextStyle(color: AppColors.inkSecondary, fontSize: 11)),
+                      style: TextStyle(color: context.colors.inkSecondary, fontSize: 11)),
                 ],
               ),
             ),
@@ -512,13 +512,13 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen> {
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          children: const [
-            Icon(Icons.fitness_center_rounded, color: AppColors.inkMuted, size: 32),
-            SizedBox(height: 12),
+          children: [
+            Icon(Icons.fitness_center_rounded, color: context.colors.inkMuted, size: 32),
+            const SizedBox(height: 12),
             Text(
               'Log a workout to start seeing your analysis — PRs, progression, and volume all build from your real training data.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: AppColors.inkSecondary, fontSize: 13),
+              style: TextStyle(color: context.colors.inkSecondary, fontSize: 13),
             ),
           ],
         ),
@@ -538,9 +538,9 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.wifi_off_rounded, color: AppColors.inkMuted, size: 32),
+                  Icon(Icons.wifi_off_rounded, color: context.colors.inkMuted, size: 32),
                   const SizedBox(height: 12),
-                  Text(message, textAlign: TextAlign.center, style: const TextStyle(color: AppColors.inkSecondary)),
+                  Text(message, textAlign: TextAlign.center, style: TextStyle(color: context.colors.inkSecondary)),
                   const SizedBox(height: 16),
                   OutlinedButton(onPressed: _refresh, child: const Text('Retry')),
                 ],
@@ -605,11 +605,11 @@ class _ProgressionSettingsState extends ConsumerState<_ProgressionSettings> {
           onTap: () => setState(() => _expanded = !_expanded),
           child: Row(
             children: [
-              const Icon(Icons.tune_rounded, size: 14, color: AppColors.inkMuted),
+              Icon(Icons.tune_rounded, size: 14, color: context.colors.inkMuted),
               const SizedBox(width: 6),
-              const Text('Progression settings', style: TextStyle(color: AppColors.inkMuted, fontSize: 12)),
+              Text('Progression settings', style: TextStyle(color: context.colors.inkMuted, fontSize: 12)),
               const Spacer(),
-              Icon(_expanded ? Icons.expand_less_rounded : Icons.expand_more_rounded, size: 18, color: AppColors.inkMuted),
+              Icon(_expanded ? Icons.expand_less_rounded : Icons.expand_more_rounded, size: 18, color: context.colors.inkMuted),
             ],
           ),
         ),
@@ -641,7 +641,7 @@ class _ProgressionSettingsState extends ConsumerState<_ProgressionSettings> {
             width: double.infinity,
             child: OutlinedButton(
               onPressed: _saving ? null : () => _save(enabled: false),
-              style: OutlinedButton.styleFrom(foregroundColor: AppColors.inkSecondary),
+              style: OutlinedButton.styleFrom(foregroundColor: context.colors.inkSecondary),
               child: const Text('Disable progression for this exercise', style: TextStyle(fontSize: 12)),
             ),
           ),

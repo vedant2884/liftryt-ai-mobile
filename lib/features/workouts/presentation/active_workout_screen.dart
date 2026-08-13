@@ -155,7 +155,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
               onPressed: () => setState(() => _confirmingDiscard = true),
               icon: const Icon(Icons.close_rounded, size: 16),
               label: const Text('Discard'),
-              style: TextButton.styleFrom(foregroundColor: AppColors.inkMuted),
+              style: TextButton.styleFrom(foregroundColor: context.colors.inkMuted),
             ),
         ],
       ),
@@ -165,9 +165,9 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
             margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: context.colors.surface,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppColors.line),
+              border: Border.all(color: context.colors.line),
             ),
             child: const RestTimer(),
           ),
@@ -176,15 +176,15 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
               margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: AppColors.surface.withValues(alpha: 0.6),
+                color: context.colors.surface.withValues(alpha: 0.6),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppColors.line),
+                border: Border.all(color: context.colors.line),
               ),
               child: Row(
                 children: [
                   Expanded(
                     child: Text('Prefilled from your last ${workout.name}.',
-                        style: const TextStyle(color: AppColors.inkSecondary, fontSize: 12)),
+                        style: TextStyle(color: context.colors.inkSecondary, fontSize: 12)),
                   ),
                   TextButton(
                     onPressed: () {
@@ -217,7 +217,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                   label: const Text('Add exercise'),
                   style: OutlinedButton.styleFrom(
                     minimumSize: const Size(double.infinity, 48),
-                    side: const BorderSide(color: AppColors.lineStrong),
+                    side: BorderSide(color: context.colors.lineStrong),
                   ),
                 ),
               ],

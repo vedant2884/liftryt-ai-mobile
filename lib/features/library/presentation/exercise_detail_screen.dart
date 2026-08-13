@@ -68,16 +68,16 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
           ),
           if (ex.description != null && ex.description!.isNotEmpty) ...[
             const SizedBox(height: 16),
-            Text(ex.description!, style: const TextStyle(color: AppColors.inkSecondary, fontSize: 13, height: 1.5)),
+            Text(ex.description!, style: TextStyle(color: context.colors.inkSecondary, fontSize: 13, height: 1.5)),
           ],
           if (!ex.isCustom) ...[
             const SizedBox(height: 20),
-            const Text('Your performance', style: TextStyle(color: AppColors.ink, fontSize: 16, fontWeight: FontWeight.w600)),
+            Text('Your performance', style: TextStyle(color: context.colors.ink, fontSize: 16, fontWeight: FontWeight.w600)),
             const SizedBox(height: 10),
             if (_loading)
               const Center(child: Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator()))
             else if (!_hasHistory || _stats == null || _stats!.sessionCount == 0)
-              const Text("You haven't logged this exercise yet.", style: TextStyle(color: AppColors.inkMuted, fontSize: 13))
+              Text("You haven't logged this exercise yet.", style: TextStyle(color: context.colors.inkMuted, fontSize: 13))
             else
               AppCard(
                 child: Column(
@@ -105,10 +105,10 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: accent ? AppColors.accent.withValues(alpha: 0.12) : AppColors.surfaceHover,
+        color: accent ? context.colors.accent.withValues(alpha: 0.12) : context.colors.surfaceHover,
         borderRadius: BorderRadius.circular(999),
       ),
-      child: Text(label, style: TextStyle(color: accent ? AppColors.accent : AppColors.inkSecondary, fontSize: 11)),
+      child: Text(label, style: TextStyle(color: accent ? context.colors.accent : context.colors.inkSecondary, fontSize: 11)),
     );
   }
 
@@ -118,8 +118,8 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: AppColors.inkMuted, fontSize: 12)),
-          Text(value, style: const TextStyle(color: AppColors.ink, fontSize: 13, fontWeight: FontWeight.w600)),
+          Text(label, style: TextStyle(color: context.colors.inkMuted, fontSize: 12)),
+          Text(value, style: TextStyle(color: context.colors.ink, fontSize: 13, fontWeight: FontWeight.w600)),
         ],
       ),
     );

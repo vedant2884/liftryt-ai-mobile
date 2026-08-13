@@ -251,12 +251,12 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                 const SizedBox(height: 16),
                 Row(
                   children: [
-                    const Expanded(child: Divider(color: AppColors.line)),
+                    Expanded(child: Divider(color: context.colors.line)),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 10),
-                      child: Text('or', style: TextStyle(color: AppColors.inkMuted, fontSize: 12)),
+                      child: Text('or', style: TextStyle(color: context.colors.inkMuted, fontSize: 12)),
                     ),
-                    const Expanded(child: Divider(color: AppColors.line)),
+                    Expanded(child: Divider(color: context.colors.line)),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -265,13 +265,13 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text('Already have an account? ',
-                        style: TextStyle(color: AppColors.inkSecondary, fontSize: 14)),
+                    Text('Already have an account? ',
+                        style: TextStyle(color: context.colors.inkSecondary, fontSize: 14)),
                     GestureDetector(
                       onTap: widget.onGoToLogin,
-                      child: const Text(
+                      child: Text(
                         'Log in',
-                        style: TextStyle(color: AppColors.accent, fontSize: 14, fontWeight: FontWeight.w500),
+                        style: TextStyle(color: context.colors.accent, fontSize: 14, fontWeight: FontWeight.w500),
                       ),
                     ),
                   ],

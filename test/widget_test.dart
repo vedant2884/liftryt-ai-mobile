@@ -14,7 +14,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         child: MaterialApp(
-          theme: AppTheme.dark,
+          theme: AppTheme.build(brightness: Brightness.dark, emeraldAccent: false),
           home: LoginScreen(
             onGoToSignup: () {},
             onGoToForgotPassword: () {},

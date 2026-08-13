@@ -1,18 +1,15 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/api_exception.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/widgets/beta_badge.dart';
 import '../data/coach_api.dart';
 import '../data/models.dart';
 import 'widgets/markdown_message.dart';
 import 'widgets/tool_result_card.dart';
-
-const _suggestedPrompts = [
-  'How am I progressing?',
-  'Review my latest workout',
-  'What should I train today?',
-];
 
 String _formatTime(DateTime d) {
   final hour = d.hour % 12 == 0 ? 12 : d.hour % 12;
@@ -56,6 +53,10 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
   @override
   void initState() {
     super.initState();
+    // Repaints the input's border on focus change (see the focus-glow
+    // treatment in build()) — FocusNode doesn't trigger a rebuild on its
+    // own.
+    _inputFocus.addListener(() => setState(() {}));
     ref.read(coachApiProvider).fetchSessions().then((s) {
       if (mounted) {
         setState(() {
@@ -181,7 +182,14 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
-        title: const Text('AI Coach', style: TextStyle(fontSize: 17)),
+        title: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Gym AI Coach', style: TextStyle(fontSize: 17)),
+            SizedBox(width: 8),
+            BetaBadge(),
+          ],
+        ),
         actions: [
           TextButton(
             onPressed: _sending ? null : _weeklyCheckin,
@@ -189,7 +197,7 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
           ),
         ],
       ),
-      drawer: Drawer(backgroundColor: AppColors.surface, child: _sidebar()),
+      drawer: Drawer(backgroundColor: context.colors.surface, child: _sidebar()),
       body: Column(
         children: [
           Expanded(
@@ -218,23 +226,48 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
             top: false,
             child: Padding(
               padding: const EdgeInsets.all(12),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _inputController,
-                      focusNode: _inputFocus,
-                      enabled: !_sending,
-                      decoration: const InputDecoration(hintText: 'Ask your coach anything...'),
-                      onSubmitted: (_) => _sendMessage(),
+              child: Container(
+                padding: const EdgeInsets.only(left: 16, right: 6, top: 4, bottom: 4),
+                decoration: BoxDecoration(
+                  color: context.colors.surface,
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(
+                    color: _inputFocus.hasFocus ? context.colors.accent.withValues(alpha: 0.6) : context.colors.lineStrong,
+                  ),
+                  boxShadow: _inputFocus.hasFocus
+                      ? [BoxShadow(color: context.colors.accent.withValues(alpha: 0.18), blurRadius: 16)]
+                      : null,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _inputController,
+                        focusNode: _inputFocus,
+                        enabled: !_sending,
+                        decoration: const InputDecoration(
+                          hintText: 'Ask your coach anything...',
+                          border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          filled: false,
+                          isDense: true,
+                        ),
+                        onSubmitted: (_) => _sendMessage(),
+                        onTapOutside: (_) => _inputFocus.unfocus(),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  IconButton.filled(
-                    onPressed: _sending ? null : () => _sendMessage(),
-                    icon: const Icon(Icons.arrow_upward_rounded, size: 18),
-                  ),
-                ],
+                    const SizedBox(width: 8),
+                    IconButton.filled(
+                      onPressed: _sending ? null : () => _sendMessage(),
+                      icon: const Icon(Icons.arrow_upward_rounded, size: 18),
+                      style: IconButton.styleFrom(
+                        backgroundColor: context.colors.accent,
+                        foregroundColor: context.colors.onAccent,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -254,18 +287,18 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
               onPressed: _startNewChat,
               icon: const Icon(Icons.add_rounded, size: 16),
               label: const Text('New chat'),
-              style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.lineStrong)),
+              style: OutlinedButton.styleFrom(side: BorderSide(color: context.colors.lineStrong)),
             ),
           ),
           Expanded(
             child: _sessionsLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _sessions.isEmpty
-                    ? const Center(
+                    ? Center(
                         child: Padding(
-                          padding: EdgeInsets.all(16),
+                          padding: const EdgeInsets.all(16),
                           child: Text('No past conversations yet.',
-                              style: TextStyle(color: AppColors.inkMuted, fontSize: 12)),
+                              style: TextStyle(color: context.colors.inkMuted, fontSize: 12)),
                         ),
                       )
                     : ListView(
@@ -273,13 +306,13 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
                           for (final s in _sessions)
                             ListTile(
                               selected: s.id == _activeSessionId,
-                              selectedTileColor: AppColors.surfaceHover,
+                              selectedTileColor: context.colors.surfaceHover,
                               title: Text(s.title ?? 'New chat',
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(color: AppColors.ink, fontSize: 13)),
+                                  style: TextStyle(color: context.colors.ink, fontSize: 13)),
                               subtitle: Text(_formatSessionDate(s.updatedAt),
-                                  style: const TextStyle(color: AppColors.inkMuted, fontSize: 10)),
+                                  style: TextStyle(color: context.colors.inkMuted, fontSize: 10)),
                               onTap: () => _openSession(s.id),
                             ),
                         ],
@@ -299,25 +332,28 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: isUser ? AppColors.accent : AppColors.bg,
+          color: isUser ? context.colors.accent : context.colors.bg,
           borderRadius: BorderRadius.circular(12),
-          border: isUser ? null : Border.all(color: AppColors.line),
+          border: isUser ? null : Border.all(color: context.colors.line),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (!isUser && m.toolPayload != null) ...[
               ToolResultCard(toolName: m.toolName, payload: m.toolPayload!),
-              const Divider(color: AppColors.line, height: 16),
+              Divider(color: context.colors.line, height: 16),
             ],
             if (isUser)
-              Text(m.content, style: const TextStyle(color: Colors.white, fontSize: 13))
+              Text(m.content, style: TextStyle(color: context.colors.onAccent, fontSize: 13))
             else
               MarkdownMessage(content: m.content),
             const SizedBox(height: 4),
             Text(
               _formatTime(m.createdAt),
-              style: TextStyle(color: isUser ? Colors.white70 : AppColors.inkMuted, fontSize: 9),
+              style: TextStyle(
+                color: isUser ? context.colors.onAccent.withValues(alpha: 0.7) : context.colors.inkMuted,
+                fontSize: 9,
+              ),
             ),
           ],
         ),
@@ -328,90 +364,107 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
   Widget _thinkingBubble() {
     return Align(
       alignment: Alignment.centerLeft,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        decoration: BoxDecoration(
-          color: AppColors.bg,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.line),
-        ),
-        child: const Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SizedBox(
-              width: 14,
-              height: 14,
-              child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.accent),
-            ),
-            SizedBox(width: 8),
-            Text('Thinking...', style: TextStyle(color: AppColors.inkMuted, fontSize: 12)),
-          ],
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          decoration: BoxDecoration(
+            color: context.colors.bg,
+            border: Border.all(color: context.colors.line),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Purple->emerald signature accent, mirrors the web app's
+              // gradient top-bar on the Coach "thinking" bubble.
+              Container(height: 2, decoration: BoxDecoration(gradient: context.colors.brandGradient)),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      width: 14,
+                      height: 14,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: context.colors.accent),
+                    ),
+                    const SizedBox(width: 8),
+                    Text('Thinking...', style: TextStyle(color: context.colors.inkMuted, fontSize: 12)),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  /// Premium fitness-coach empty state — deliberately no chat-bubble icon,
-  /// matching the web app's recently-redesigned equivalent.
+  /// Premium fitness-coach empty state — deliberately no chat-bubble icon
+  /// and no suggested-question chips, matching the web app's redesigned
+  /// equivalent. The blurred gradient blob behind the pill is the same
+  /// purple->emerald "brand signature" placement used there.
   Widget _emptyState() {
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+        child: Stack(
+          alignment: Alignment.topCenter,
           children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                border: Border.all(color: AppColors.lineStrong),
-                borderRadius: BorderRadius.circular(999),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.fitness_center_rounded, color: AppColors.accent, size: 13),
-                  const SizedBox(width: 6),
-                  Text('YOUR COACH',
-                      style: TextStyle(
-                          color: AppColors.inkSecondary,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 1.2)),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Text('Your training, your data, your coach.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: AppColors.ink, fontSize: 19, fontWeight: FontWeight.w600)),
-            const SizedBox(height: 8),
-            const Text('Ask about your workouts, progress, macros, or next session.',
-                textAlign: TextAlign.center, style: TextStyle(color: AppColors.inkMuted, fontSize: 13)),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () => _inputFocus.requestFocus(),
-              child: const Text('Start a conversation'),
-            ),
-            const SizedBox(height: 16),
-            Wrap(
-              alignment: WrapAlignment.center,
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final prompt in _suggestedPrompts)
-                  OutlinedButton(
-                    onPressed: () {
-                      _inputController.text = prompt;
-                      _inputFocus.requestFocus();
-                    },
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.inkSecondary,
-                      side: const BorderSide(color: AppColors.lineStrong),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            Positioned(
+              top: -20,
+              child: IgnorePointer(
+                child: Opacity(
+                  opacity: 0.12,
+                  child: ImageFiltered(
+                    imageFilter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
+                    child: Container(
+                      width: 200,
+                      height: 200,
+                      decoration: BoxDecoration(shape: BoxShape.circle, gradient: context.colors.brandGradient),
                     ),
-                    child: Text(prompt, style: const TextStyle(fontSize: 11)),
                   ),
+                ),
+              ),
+            ),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: context.colors.lineStrong),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.fitness_center_rounded, color: context.colors.accent, size: 13),
+                      const SizedBox(width: 6),
+                      Text('GYM AI COACH',
+                          style: TextStyle(
+                              color: context.colors.inkSecondary,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 1.2)),
+                      const SizedBox(width: 6),
+                      const BetaBadge(),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text('Your training. Your data. Your coach.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: context.colors.ink, fontSize: 19, fontWeight: FontWeight.w600)),
+                const SizedBox(height: 8),
+                Text('Ask anything about your workouts, progress, nutrition, or training.',
+                    textAlign: TextAlign.center, style: TextStyle(color: context.colors.inkMuted, fontSize: 13)),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () => _inputFocus.requestFocus(),
+                  child: const Text('Start a conversation'),
+                ),
               ],
             ),
           ],

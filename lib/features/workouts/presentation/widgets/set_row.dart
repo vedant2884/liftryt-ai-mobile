@@ -74,7 +74,7 @@ class _SetRowState extends State<SetRow> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 4),
       decoration: BoxDecoration(
-        color: set.completed ? const Color(0xFF34D399).withValues(alpha: 0.06) : null,
+        color: set.completed ? context.colors.success.withValues(alpha: 0.06) : null,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -84,18 +84,18 @@ class _SetRowState extends State<SetRow> {
             child: Text(
               '${widget.index + 1}',
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.inkMuted, fontSize: 12),
+              style: TextStyle(color: context.colors.inkMuted, fontSize: 12),
             ),
           ),
           const SizedBox(width: 6),
           if (set.completed) ...[
             Expanded(
               child: Text('${set.weight} kg', textAlign: TextAlign.center,
-                  style: const TextStyle(color: AppColors.ink, fontSize: 14)),
+                  style: TextStyle(color: context.colors.ink, fontSize: 14)),
             ),
             Expanded(
               child: Text('${set.reps} reps', textAlign: TextAlign.center,
-                  style: const TextStyle(color: AppColors.ink, fontSize: 14)),
+                  style: TextStyle(color: context.colors.ink, fontSize: 14)),
             ),
           ] else ...[
             Expanded(
@@ -118,8 +118,8 @@ class _SetRowState extends State<SetRow> {
               child: IconButton(
                 onPressed: _canComplete ? widget.onComplete : null,
                 style: IconButton.styleFrom(
-                  backgroundColor: AppColors.accent,
-                  disabledBackgroundColor: AppColors.accent.withValues(alpha: 0.3),
+                  backgroundColor: context.colors.accent,
+                  disabledBackgroundColor: context.colors.accent.withValues(alpha: 0.3),
                 ),
                 icon: set.saving
                     ? const SizedBox(
@@ -136,7 +136,7 @@ class _SetRowState extends State<SetRow> {
             child: IconButton(
               onPressed: widget.onDuplicate,
               icon: const Icon(Icons.copy_rounded, size: 16),
-              color: AppColors.inkMuted,
+              color: context.colors.inkMuted,
             ),
           ),
           SizedBox(
@@ -145,7 +145,7 @@ class _SetRowState extends State<SetRow> {
             child: IconButton(
               onPressed: widget.onRemove,
               icon: const Icon(Icons.delete_outline_rounded, size: 18),
-              color: AppColors.inkMuted,
+              color: context.colors.inkMuted,
             ),
           ),
         ],
@@ -181,15 +181,15 @@ class _PrBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       decoration: BoxDecoration(
-        color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
+        color: context.colors.success.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(999),
       ),
-      child: const Row(
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.star_rounded, size: 10, color: Color(0xFFFBBF24)),
-          SizedBox(width: 2),
-          Text('PR', style: TextStyle(color: Color(0xFFFBBF24), fontSize: 10, fontWeight: FontWeight.w600)),
+          Icon(Icons.star_rounded, size: 10, color: context.colors.success),
+          const SizedBox(width: 2),
+          Text('PR', style: TextStyle(color: context.colors.success, fontSize: 10, fontWeight: FontWeight.w600)),
         ],
       ),
     );

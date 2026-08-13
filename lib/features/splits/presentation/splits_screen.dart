@@ -124,8 +124,8 @@ class _SplitsScreenState extends ConsumerState<SplitsScreen> {
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
               onRefresh: _load,
-              color: AppColors.accent,
-              backgroundColor: AppColors.surface,
+              color: context.colors.accent,
+              backgroundColor: context.colors.surface,
               child: ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
@@ -146,20 +146,20 @@ class _SplitsScreenState extends ConsumerState<SplitsScreen> {
   List<Widget> _activeSplitSection(SplitPlan plan) {
     final today = plan.todayDay;
     return [
-      const Text('Active split', style: TextStyle(color: AppColors.ink, fontSize: 16, fontWeight: FontWeight.w600)),
+      Text('Active split', style: TextStyle(color: context.colors.ink, fontSize: 16, fontWeight: FontWeight.w600)),
       const SizedBox(height: 10),
       AppCard(
-        borderColor: AppColors.accent.withValues(alpha: 0.4),
-        backgroundColor: AppColors.accent.withValues(alpha: 0.08),
+        borderColor: context.colors.accent.withValues(alpha: 0.4),
+        backgroundColor: context.colors.accent.withValues(alpha: 0.08),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('${plan.splitType} · ${plan.daysPerWeek} days/week',
-                style: const TextStyle(color: AppColors.accent, fontSize: 12)),
+                style: TextStyle(color: context.colors.accent, fontSize: 12)),
             const SizedBox(height: 6),
             if (today != null) ...[
               Text('Today: ${today.label}',
-                  style: const TextStyle(color: AppColors.ink, fontSize: 18, fontWeight: FontWeight.w600)),
+                  style: TextStyle(color: context.colors.ink, fontSize: 18, fontWeight: FontWeight.w600)),
               const SizedBox(height: 10),
               ElevatedButton.icon(
                 onPressed: () => _startDay(today),
@@ -169,7 +169,7 @@ class _SplitsScreenState extends ConsumerState<SplitsScreen> {
               if (plan.upcoming().isNotEmpty) ...[
                 const SizedBox(height: 8),
                 Text('Up next: ${plan.upcoming().map((d) => d.label).join(', ')}',
-                    style: const TextStyle(color: AppColors.inkMuted, fontSize: 12)),
+                    style: TextStyle(color: context.colors.inkMuted, fontSize: 12)),
               ],
             ],
           ],
@@ -182,10 +182,10 @@ class _SplitsScreenState extends ConsumerState<SplitsScreen> {
           child: AppCard(
             padding: const EdgeInsets.all(12),
             borderColor: plan.completedDayNumbers.contains(day.dayNumber)
-                ? const Color(0xFF34D399).withValues(alpha: 0.4)
-                : AppColors.line,
+                ? context.colors.success.withValues(alpha: 0.4)
+                : context.colors.line,
             backgroundColor:
-                plan.completedDayNumbers.contains(day.dayNumber) ? const Color(0xFF34D399).withValues(alpha: 0.05) : null,
+                plan.completedDayNumbers.contains(day.dayNumber) ? context.colors.success.withValues(alpha: 0.05) : null,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -193,7 +193,7 @@ class _SplitsScreenState extends ConsumerState<SplitsScreen> {
                   children: [
                     Expanded(
                       child: Text('Day ${day.dayNumber}: ${day.label}',
-                          style: const TextStyle(color: AppColors.ink, fontSize: 14, fontWeight: FontWeight.w600)),
+                          style: TextStyle(color: context.colors.ink, fontSize: 14, fontWeight: FontWeight.w600)),
                     ),
                     IconButton(
                       onPressed: () => _toggleDay(day.dayNumber),
@@ -203,8 +203,8 @@ class _SplitsScreenState extends ConsumerState<SplitsScreen> {
                             : Icons.check_circle_outline_rounded,
                         size: 20,
                         color: plan.completedDayNumbers.contains(day.dayNumber)
-                            ? const Color(0xFF34D399)
-                            : AppColors.inkMuted,
+                            ? context.colors.success
+                            : context.colors.inkMuted,
                       ),
                       visualDensity: VisualDensity.compact,
                     ),
@@ -214,7 +214,7 @@ class _SplitsScreenState extends ConsumerState<SplitsScreen> {
                   Padding(
                     padding: const EdgeInsets.only(top: 4),
                     child: Text('${ex.name} · ${ex.sets}×${ex.reps}',
-                        style: const TextStyle(color: AppColors.inkSecondary, fontSize: 12)),
+                        style: TextStyle(color: context.colors.inkSecondary, fontSize: 12)),
                   ),
               ],
             ),
@@ -229,7 +229,7 @@ class _SplitsScreenState extends ConsumerState<SplitsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(_active == null ? 'Generate your first split' : 'Generate a new split',
-              style: const TextStyle(color: AppColors.ink, fontSize: 14, fontWeight: FontWeight.w600)),
+              style: TextStyle(color: context.colors.ink, fontSize: 14, fontWeight: FontWeight.w600)),
           const SizedBox(height: 10),
           Row(
             children: [
@@ -284,14 +284,14 @@ class _SplitsScreenState extends ConsumerState<SplitsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Your splits', style: TextStyle(color: AppColors.ink, fontSize: 16, fontWeight: FontWeight.w600)),
+        Text('Your splits', style: TextStyle(color: context.colors.ink, fontSize: 16, fontWeight: FontWeight.w600)),
         const SizedBox(height: 10),
         for (final s in _saved)
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: AppCard(
               padding: const EdgeInsets.all(12),
-              borderColor: s.isActive ? AppColors.accent.withValues(alpha: 0.4) : AppColors.line,
+              borderColor: s.isActive ? context.colors.accent.withValues(alpha: 0.4) : context.colors.line,
               child: Row(
                 children: [
                   Expanded(
@@ -299,8 +299,8 @@ class _SplitsScreenState extends ConsumerState<SplitsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('${s.splitType} · ${s.daysPerWeek} days/week',
-                            style: const TextStyle(color: AppColors.ink, fontSize: 13, fontWeight: FontWeight.w600)),
-                        Text(_humanize(s.goal), style: const TextStyle(color: AppColors.inkMuted, fontSize: 11)),
+                            style: TextStyle(color: context.colors.ink, fontSize: 13, fontWeight: FontWeight.w600)),
+                        Text(_humanize(s.goal), style: TextStyle(color: context.colors.inkMuted, fontSize: 11)),
                       ],
                     ),
                   ),
@@ -308,8 +308,8 @@ class _SplitsScreenState extends ConsumerState<SplitsScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                          color: AppColors.accent.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(999)),
-                      child: const Text('Preferred', style: TextStyle(color: AppColors.accent, fontSize: 11)),
+                          color: context.colors.accent.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(999)),
+                      child: Text('Preferred', style: TextStyle(color: context.colors.accent, fontSize: 11)),
                     )
                   else
                     OutlinedButton(

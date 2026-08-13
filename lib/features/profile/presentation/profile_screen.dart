@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/theme_prefs.dart';
 import '../../../shared/widgets/app_card.dart';
+import '../../auth/data/models.dart';
 import '../../auth/state/auth_controller.dart';
 import '../../library/presentation/library_screen.dart';
 import '../../macros/presentation/macros_screen.dart';
@@ -39,6 +43,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     super.dispose();
   }
 
+  Future<void> _setThemeMode(AppThemeMode mode) async {
+    ref.read(authControllerProvider.notifier).applyThemePreview(theme: mode);
+    unawaited(ref.read(themePrefsProvider).save(themeMode: mode));
+    await ref.read(authControllerProvider.notifier).updateProfile(theme: mode);
+  }
+
+  Future<void> _setAccentColor(AccentColor accent) async {
+    ref.read(authControllerProvider.notifier).applyThemePreview(accentColor: accent);
+    unawaited(ref.read(themePrefsProvider).save(accentColor: accent));
+    await ref.read(authControllerProvider.notifier).updateProfile(accentColor: accent);
+  }
+
   Future<void> _saveIncrement() async {
     final value = double.tryParse(_incrementController.text);
     if (value == null || value <= 0) return;
@@ -62,17 +78,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
           children: [
-            const Text('Profile', style: TextStyle(color: AppColors.ink, fontSize: 24, fontWeight: FontWeight.w600)),
+            Text('Profile', style: TextStyle(color: context.colors.ink, fontSize: 24, fontWeight: FontWeight.w600)),
             const SizedBox(height: 16),
             AppCard(
               child: Row(
                 children: [
                   CircleAvatar(
                     radius: 24,
-                    backgroundColor: AppColors.accent.withValues(alpha: 0.15),
+                    backgroundColor: context.colors.accent.withValues(alpha: 0.15),
                     child: Text(
                       (user?.fullName.isNotEmpty ?? false) ? user!.fullName[0].toUpperCase() : '?',
-                      style: const TextStyle(color: AppColors.accent, fontSize: 18, fontWeight: FontWeight.w600),
+                      style: TextStyle(color: context.colors.accent, fontSize: 18, fontWeight: FontWeight.w600),
                     ),
                   ),
                   const SizedBox(width: 14),
@@ -81,9 +97,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(user?.fullName ?? '',
-                            style: const TextStyle(color: AppColors.ink, fontSize: 16, fontWeight: FontWeight.w600)),
+                            style: TextStyle(color: context.colors.ink, fontSize: 16, fontWeight: FontWeight.w600)),
                         const SizedBox(height: 2),
-                        Text(user?.email ?? '', style: const TextStyle(color: AppColors.inkMuted, fontSize: 13)),
+                        Text(user?.email ?? '', style: TextStyle(color: context.colors.inkMuted, fontSize: 13)),
                       ],
                     ),
                   ),
@@ -91,33 +107,37 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
             ),
             const SizedBox(height: 20),
-            const Text('More', style: TextStyle(color: AppColors.inkMuted, fontSize: 12, fontWeight: FontWeight.w600)),
+            Text('Appearance', style: TextStyle(color: context.colors.inkMuted, fontSize: 12, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 8),
+            _appearanceCard(user),
+            const SizedBox(height: 20),
+            Text('More', style: TextStyle(color: context.colors.inkMuted, fontSize: 12, fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
             AppCard(
               padding: EdgeInsets.zero,
               child: Column(
                 children: [
                   _navRow(Icons.monitor_weight_outlined, 'Weight', () => _push(const WeightScreen())),
-                  const Divider(color: AppColors.line, height: 1),
+                  Divider(color: context.colors.line, height: 1),
                   _navRow(Icons.pie_chart_outline_rounded, 'Macros', () => _push(const MacrosScreen())),
-                  const Divider(color: AppColors.line, height: 1),
+                  Divider(color: context.colors.line, height: 1),
                   _navRow(Icons.menu_book_outlined, 'Exercise Library', () => _push(const LibraryScreen())),
-                  const Divider(color: AppColors.line, height: 1),
+                  Divider(color: context.colors.line, height: 1),
                   _navRow(Icons.calendar_month_outlined, 'Workout Splits', () => _push(const SplitsScreen())),
                 ],
               ),
             ),
             const SizedBox(height: 20),
-            const Text('Progression', style: TextStyle(color: AppColors.inkMuted, fontSize: 12, fontWeight: FontWeight.w600)),
+            Text('Progression', style: TextStyle(color: context.colors.inkMuted, fontSize: 12, fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
             AppCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Default weight increment', style: TextStyle(color: AppColors.ink, fontSize: 13)),
+                  Text('Default weight increment', style: TextStyle(color: context.colors.ink, fontSize: 13)),
                   const SizedBox(height: 4),
-                  const Text('Used for every exercise unless it has its own override (set from Progress).',
-                      style: TextStyle(color: AppColors.inkMuted, fontSize: 11)),
+                  Text('Used for every exercise unless it has its own override (set from Progress).',
+                      style: TextStyle(color: context.colors.inkMuted, fontSize: 11)),
                   const SizedBox(height: 10),
                   Row(
                     children: [
@@ -162,11 +182,104 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
   }
 
+  Widget _appearanceCard(UserProfile? user) {
+    final prefs = ref.watch(themePrefsProvider);
+    final mode = user?.theme ?? prefs.themeMode;
+    final accent = user?.accentColor ?? prefs.accentColor;
+
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Mode', style: TextStyle(color: context.colors.inkSecondary, fontSize: 12)),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: context.colors.bg,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: context.colors.line),
+            ),
+            child: Row(
+              children: [
+                for (final entry in const [
+                  (AppThemeMode.dark, Icons.dark_mode_outlined, 'Dark'),
+                  (AppThemeMode.light, Icons.light_mode_outlined, 'Light'),
+                  (AppThemeMode.system, Icons.brightness_auto_outlined, 'System'),
+                ])
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => _setThemeMode(entry.$1),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        decoration: BoxDecoration(
+                          color: mode == entry.$1 ? context.colors.accent : Colors.transparent,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Column(
+                          children: [
+                            Icon(entry.$2, size: 16, color: mode == entry.$1 ? Colors.white : context.colors.inkSecondary),
+                            const SizedBox(height: 2),
+                            Text(entry.$3,
+                                style: TextStyle(
+                                    fontSize: 11, color: mode == entry.$1 ? Colors.white : context.colors.inkSecondary)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text('Accent', style: TextStyle(color: context.colors.inkSecondary, fontSize: 12)),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              for (final entry in const [
+                (AccentColor.violet, Color(0xFF8B5CF6), 'Violet'),
+                (AccentColor.emerald, Color(0xFF10B981), 'Emerald'),
+              ])
+                Padding(
+                  padding: const EdgeInsets.only(right: 10),
+                  child: GestureDetector(
+                    onTap: () => _setAccentColor(entry.$1),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: accent == entry.$1 ? entry.$2 : context.colors.line,
+                          width: accent == entry.$1 ? 1.5 : 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 12,
+                            height: 12,
+                            decoration: BoxDecoration(color: entry.$2, shape: BoxShape.circle),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(entry.$3, style: TextStyle(color: context.colors.ink, fontSize: 13)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _navRow(IconData icon, String label, VoidCallback onTap) {
     return ListTile(
-      leading: Icon(icon, color: AppColors.inkSecondary, size: 20),
-      title: Text(label, style: const TextStyle(color: AppColors.ink, fontSize: 14)),
-      trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.inkMuted, size: 20),
+      leading: Icon(icon, color: context.colors.inkSecondary, size: 20),
+      title: Text(label, style: TextStyle(color: context.colors.ink, fontSize: 14)),
+      trailing: Icon(Icons.chevron_right_rounded, color: context.colors.inkMuted, size: 20),
       onTap: onTap,
     );
   }

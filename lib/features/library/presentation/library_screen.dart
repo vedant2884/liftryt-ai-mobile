@@ -134,29 +134,29 @@ class _FavoritesTabState extends ConsumerState<_FavoritesTab> {
   Widget build(BuildContext context) {
     if (_loading) return const Center(child: CircularProgressIndicator());
     if (_favorites.isEmpty) {
-      return const Center(
+      return Center(
         child: Padding(
-          padding: EdgeInsets.all(24),
+          padding: const EdgeInsets.all(24),
           child: Text('No favorites yet — star exercises from Search to see them here.',
-              textAlign: TextAlign.center, style: TextStyle(color: AppColors.inkMuted, fontSize: 13)),
+              textAlign: TextAlign.center, style: TextStyle(color: context.colors.inkMuted, fontSize: 13)),
         ),
       );
     }
     return RefreshIndicator(
       onRefresh: _load,
-      color: AppColors.accent,
-      backgroundColor: AppColors.surface,
+      color: context.colors.accent,
+      backgroundColor: context.colors.surface,
       child: ListView(
         children: [
           for (final f in _favorites)
             ListTile(
-              title: Text(f.name, style: const TextStyle(color: AppColors.ink, fontSize: 14)),
+              title: Text(f.name, style: TextStyle(color: context.colors.ink, fontSize: 14)),
               subtitle: Text(
                 [if (f.primaryMuscles.isNotEmpty) _humanize(f.primaryMuscles.first), _humanize(f.equipment)].join(' · '),
-                style: const TextStyle(color: AppColors.inkMuted, fontSize: 12),
+                style: TextStyle(color: context.colors.inkMuted, fontSize: 12),
               ),
               trailing: IconButton(
-                icon: const Icon(Icons.star_rounded, color: AppColors.accent, size: 20),
+                icon: Icon(Icons.star_rounded, color: context.colors.accent, size: 20),
                 onPressed: () async {
                   await ref.read(libraryApiProvider).removeFavorite(f.id);
                   _load();
@@ -219,18 +219,18 @@ class _CustomTabState extends ConsumerState<_CustomTab> {
   Widget build(BuildContext context) {
     if (_loading) return const Center(child: CircularProgressIndicator());
     if (_custom.isEmpty) {
-      return const Center(
+      return Center(
         child: Padding(
-          padding: EdgeInsets.all(24),
+          padding: const EdgeInsets.all(24),
           child: Text('No custom exercises yet — add one from the workout logger\'s exercise picker.',
-              textAlign: TextAlign.center, style: TextStyle(color: AppColors.inkMuted, fontSize: 13)),
+              textAlign: TextAlign.center, style: TextStyle(color: context.colors.inkMuted, fontSize: 13)),
         ),
       );
     }
     return RefreshIndicator(
       onRefresh: _load,
-      color: AppColors.accent,
-      backgroundColor: AppColors.surface,
+      color: context.colors.accent,
+      backgroundColor: context.colors.surface,
       child: ListView(children: [for (final ex in _custom) _ExerciseTile(exercise: ex)]),
     );
   }
@@ -244,17 +244,17 @@ class _ExerciseTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return ListTile(
-      title: Text(exercise.name, style: const TextStyle(color: AppColors.ink, fontSize: 14)),
+      title: Text(exercise.name, style: TextStyle(color: context.colors.ink, fontSize: 14)),
       subtitle: Text(
         [if (exercise.primaryMuscles.isNotEmpty) _humanize(exercise.primaryMuscles.first), _humanize(exercise.equipment)]
             .join(' · '),
-        style: const TextStyle(color: AppColors.inkMuted, fontSize: 12),
+        style: TextStyle(color: context.colors.inkMuted, fontSize: 12),
       ),
       trailing: exercise.isCustom
           ? null
           : IconButton(
               icon: const Icon(Icons.star_outline_rounded, size: 20),
-              color: AppColors.inkMuted,
+              color: context.colors.inkMuted,
               onPressed: () async {
                 await ref.read(libraryApiProvider).addFavorite(exerciseId: exercise.id);
                 if (context.mounted) {

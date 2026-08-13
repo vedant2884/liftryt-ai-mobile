@@ -20,38 +20,38 @@ class ToolResultCard extends StatelessWidget {
     if (result == null || result.containsKey('error')) return const SizedBox.shrink();
 
     if (toolName == 'generate_workout_split' && result.containsKey('days')) {
-      return _splitCard(result);
+      return _splitCard(context, result);
     }
     if (toolName == 'calculate_macros' && result.containsKey('target_calories')) {
-      return _macroCard(result);
+      return _macroCard(context, result);
     }
     return const SizedBox.shrink();
   }
 
-  Widget _splitCard(Map<String, dynamic> result) {
+  Widget _splitCard(BuildContext context, Map<String, dynamic> result) {
     final days = result['days'] as List<dynamic>;
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: AppColors.bg.withValues(alpha: 0.6),
+        color: context.colors.bg.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.lineStrong),
+        border: Border.all(color: context.colors.lineStrong),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text((result['split_type'] as String? ?? '').toUpperCase(),
-              style: const TextStyle(color: AppColors.inkMuted, fontSize: 10, letterSpacing: 0.5)),
+              style: TextStyle(color: context.colors.inkMuted, fontSize: 10, letterSpacing: 0.5)),
           for (final d in days) ...[
             const SizedBox(height: 8),
             Text('Day ${d['day_number']}: ${d['label']}',
-                style: const TextStyle(color: AppColors.ink, fontSize: 12, fontWeight: FontWeight.w600)),
+                style: TextStyle(color: context.colors.ink, fontSize: 12, fontWeight: FontWeight.w600)),
             for (final ex in (d['exercises'] as List<dynamic>))
               Padding(
                 padding: const EdgeInsets.only(left: 8, top: 2),
                 child: Text('• ${ex['name']} · ${ex['sets']}×${ex['reps']}',
-                    style: const TextStyle(color: AppColors.inkSecondary, fontSize: 11)),
+                    style: TextStyle(color: context.colors.inkSecondary, fontSize: 11)),
               ),
           ],
         ],
@@ -59,7 +59,7 @@ class ToolResultCard extends StatelessWidget {
     );
   }
 
-  Widget _macroCard(Map<String, dynamic> result) {
+  Widget _macroCard(BuildContext context, Map<String, dynamic> result) {
     final entries = {
       'BMR': result['bmr'],
       'TDEE': result['tdee'],
@@ -72,9 +72,9 @@ class ToolResultCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: AppColors.bg.withValues(alpha: 0.6),
+        color: context.colors.bg.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.lineStrong),
+        border: Border.all(color: context.colors.lineStrong),
       ),
       child: GridView.count(
         crossAxisCount: 2,
@@ -83,7 +83,7 @@ class ToolResultCard extends StatelessWidget {
         childAspectRatio: 4,
         children: [
           for (final e in entries.entries)
-            Text('${e.key}: ${e.value}', style: const TextStyle(color: AppColors.inkSecondary, fontSize: 11)),
+            Text('${e.key}: ${e.value}', style: TextStyle(color: context.colors.inkSecondary, fontSize: 11)),
         ],
       ),
     );

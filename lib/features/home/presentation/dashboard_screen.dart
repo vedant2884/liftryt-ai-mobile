@@ -53,8 +53,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: _refresh,
-          color: AppColors.accent,
-          backgroundColor: AppColors.surface,
+          color: context.colors.accent,
+          backgroundColor: context.colors.surface,
           child: FutureBuilder<DashboardData>(
             future: _future,
             builder: (context, snapshot) {
@@ -75,8 +75,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 children: [
                   Text(
                     'Welcome, ${user?.fullName ?? ''}',
-                    style: const TextStyle(
-                      color: AppColors.ink,
+                    style: TextStyle(
+                      color: context.colors.ink,
                       fontSize: 24,
                       fontWeight: FontWeight.w600,
                       letterSpacing: -0.3,
@@ -122,32 +122,32 @@ class _QuickStartCard extends ConsumerWidget {
     final lastWorkout = data.lastWorkout;
 
     return AppCard(
-      borderColor: AppColors.accent.withValues(alpha: 0.4),
-      backgroundColor: AppColors.accent.withValues(alpha: 0.08),
+      borderColor: context.colors.accent.withValues(alpha: 0.4),
+      backgroundColor: context.colors.accent.withValues(alpha: 0.08),
       onTap: () => ref.read(selectedTabProvider.notifier).state = 1,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (split != null && today != null) ...[
             Text('Active split · ${split.splitType}',
-                style: const TextStyle(color: AppColors.accent, fontSize: 12)),
+                style: TextStyle(color: context.colors.accent, fontSize: 12)),
             const SizedBox(height: 4),
             Text('Today: ${today.label}',
-                style: const TextStyle(color: AppColors.ink, fontSize: 18, fontWeight: FontWeight.w600)),
+                style: TextStyle(color: context.colors.ink, fontSize: 18, fontWeight: FontWeight.w600)),
             if (upcoming.isNotEmpty) ...[
               const SizedBox(height: 4),
               Text('Up next: ${upcoming.map((d) => d.label).join(', ')}',
-                  style: const TextStyle(color: AppColors.inkMuted, fontSize: 12)),
+                  style: TextStyle(color: context.colors.inkMuted, fontSize: 12)),
             ],
           ] else ...[
-            const Text('Ready to train?',
-                style: TextStyle(color: AppColors.accent, fontSize: 12, fontWeight: FontWeight.w600)),
+            Text('Ready to train?',
+                style: TextStyle(color: context.colors.accent, fontSize: 12, fontWeight: FontWeight.w600)),
             const SizedBox(height: 4),
             Text(
               lastWorkout != null
                   ? 'Last: ${lastWorkout.name} · ${_formatDate(lastWorkout.performedAt)} · ${lastWorkout.setCount} sets'
                   : 'Log your first workout to get started.',
-              style: const TextStyle(color: AppColors.inkSecondary, fontSize: 14),
+              style: TextStyle(color: context.colors.inkSecondary, fontSize: 14),
             ),
           ],
           const SizedBox(height: 14),
@@ -155,7 +155,7 @@ class _QuickStartCard extends ConsumerWidget {
             alignment: Alignment.centerLeft,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
-              decoration: BoxDecoration(color: AppColors.accent, borderRadius: BorderRadius.circular(8)),
+              decoration: BoxDecoration(color: context.colors.accent, borderRadius: BorderRadius.circular(8)),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -189,16 +189,16 @@ class _StreakCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(Icons.local_fire_department_rounded, color: AppColors.inkMuted, size: 15),
-              SizedBox(width: 6),
-              Text('Streak', style: TextStyle(color: AppColors.inkMuted, fontSize: 12)),
+              Icon(Icons.local_fire_department_rounded, color: context.colors.inkMuted, size: 15),
+              const SizedBox(width: 6),
+              Text('Streak', style: TextStyle(color: context.colors.inkMuted, fontSize: 12)),
             ],
           ),
           const SizedBox(height: 6),
           Text('$days ${days == 1 ? 'day' : 'days'}',
-              style: const TextStyle(color: AppColors.ink, fontSize: 20, fontWeight: FontWeight.w600)),
+              style: TextStyle(color: context.colors.ink, fontSize: 20, fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -218,19 +218,19 @@ class _AdherenceCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(Icons.event_available_rounded, color: AppColors.inkMuted, size: 15),
-              SizedBox(width: 6),
-              Text('This week', style: TextStyle(color: AppColors.inkMuted, fontSize: 12)),
+              Icon(Icons.event_available_rounded, color: context.colors.inkMuted, size: 15),
+              const SizedBox(width: 6),
+              Text('This week', style: TextStyle(color: context.colors.inkMuted, fontSize: 12)),
             ],
           ),
           const SizedBox(height: 6),
           adherence != null
               ? Text('${adherence.completed}/${adherence.planned}',
-                  style: const TextStyle(color: AppColors.ink, fontSize: 20, fontWeight: FontWeight.w600))
-              : const Text('No split yet',
-                  style: TextStyle(color: AppColors.inkSecondary, fontSize: 13)),
+                  style: TextStyle(color: context.colors.ink, fontSize: 20, fontWeight: FontWeight.w600))
+              : Text('No split yet',
+                  style: TextStyle(color: context.colors.inkSecondary, fontSize: 13)),
         ],
       ),
     );
@@ -247,7 +247,7 @@ class _WeightCard extends ConsumerWidget {
     final current = weight?.currentWeightKg;
     final rate = weight?.rateKgPerWeek;
     final rateColor = rate == null
-        ? AppColors.inkMuted
+        ? context.colors.inkMuted
         : rate < 0
             ? const Color(0xFF34D399)
             : const Color(0xFFFBBF24);
@@ -255,26 +255,26 @@ class _WeightCard extends ConsumerWidget {
     return AppCard(
       onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const WeightScreen())),
       child: current == null
-          ? const Row(
+          ? Row(
               children: [
-                Icon(Icons.monitor_weight_outlined, color: AppColors.inkMuted, size: 22),
-                SizedBox(width: 10),
+                Icon(Icons.monitor_weight_outlined, color: context.colors.inkMuted, size: 22),
+                const SizedBox(width: 10),
                 Expanded(
-                  child: Text('No weight logged yet.', style: TextStyle(color: AppColors.inkSecondary, fontSize: 14)),
+                  child: Text('No weight logged yet.', style: TextStyle(color: context.colors.inkSecondary, fontSize: 14)),
                 ),
               ],
             )
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Current weight', style: TextStyle(color: AppColors.inkMuted, fontSize: 12)),
+                Text('Current weight', style: TextStyle(color: context.colors.inkMuted, fontSize: 12)),
                 const SizedBox(height: 4),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.baseline,
                   textBaseline: TextBaseline.alphabetic,
                   children: [
                     Text('${current.toStringAsFixed(1)} kg',
-                        style: const TextStyle(color: AppColors.ink, fontSize: 20, fontWeight: FontWeight.w600)),
+                        style: TextStyle(color: context.colors.ink, fontSize: 20, fontWeight: FontWeight.w600)),
                     if (rate != null) ...[
                       const SizedBox(width: 10),
                       Text(
@@ -301,20 +301,20 @@ class _RecentPrCard extends StatelessWidget {
     return AppCard(
       child: Row(
         children: [
-          const Icon(Icons.emoji_events_rounded, color: AppColors.accent, size: 22),
+          Icon(Icons.emoji_events_rounded, color: context.colors.accent, size: 22),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Recent PR', style: TextStyle(color: AppColors.inkMuted, fontSize: 12)),
+                Text('Recent PR', style: TextStyle(color: context.colors.inkMuted, fontSize: 12)),
                 const SizedBox(height: 2),
                 Text(
                   '${pr!.exerciseName} · ${pr!.weightKg.toStringAsFixed(1)} kg × ${pr!.reps}',
-                  style: const TextStyle(color: AppColors.ink, fontSize: 14, fontWeight: FontWeight.w600),
+                  style: TextStyle(color: context.colors.ink, fontSize: 14, fontWeight: FontWeight.w600),
                 ),
                 Text('Achieved ${_formatDate(pr!.performedAt)}',
-                    style: const TextStyle(color: AppColors.inkMuted, fontSize: 12)),
+                    style: TextStyle(color: context.colors.inkMuted, fontSize: 12)),
               ],
             ),
           ),
@@ -336,9 +336,9 @@ class _QuickActionsRow extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(vertical: 12),
             child: Column(
               children: [
-                Icon(icon, color: AppColors.inkSecondary, size: 20),
+                Icon(icon, color: context.colors.inkSecondary, size: 20),
                 const SizedBox(height: 6),
-                Text(label, style: const TextStyle(color: AppColors.inkSecondary, fontSize: 12)),
+                Text(label, style: TextStyle(color: context.colors.inkSecondary, fontSize: 12)),
               ],
             ),
           ),
@@ -370,7 +370,7 @@ class _DashboardSkeleton extends StatelessWidget {
     Widget box(double height) => Container(
           height: height,
           margin: const EdgeInsets.only(bottom: 12),
-          decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(12)),
+          decoration: BoxDecoration(color: context.colors.surface, borderRadius: BorderRadius.circular(12)),
         );
 
     return ListView(
@@ -408,9 +408,9 @@ class _DashboardError extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.wifi_off_rounded, color: AppColors.inkMuted, size: 32),
+                  Icon(Icons.wifi_off_rounded, color: context.colors.inkMuted, size: 32),
                   const SizedBox(height: 12),
-                  Text(message, textAlign: TextAlign.center, style: const TextStyle(color: AppColors.inkSecondary)),
+                  Text(message, textAlign: TextAlign.center, style: TextStyle(color: context.colors.inkSecondary)),
                   const SizedBox(height: 16),
                   OutlinedButton(onPressed: onRetry, child: const Text('Retry')),
                 ],

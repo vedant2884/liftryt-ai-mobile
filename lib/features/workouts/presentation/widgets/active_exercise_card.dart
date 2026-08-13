@@ -115,41 +115,41 @@ class ActiveExerciseCard extends ConsumerWidget {
             children: [
               Expanded(
                 child: Text(exercise.name,
-                    style: const TextStyle(color: AppColors.ink, fontSize: 15, fontWeight: FontWeight.w600)),
+                    style: TextStyle(color: context.colors.ink, fontSize: 15, fontWeight: FontWeight.w600)),
               ),
               IconButton(
                 onPressed: canMoveUp ? () => controller.moveExercise(exercise.localId, up: true) : null,
                 icon: const Icon(Icons.keyboard_arrow_up_rounded, size: 20),
-                color: AppColors.inkMuted,
+                color: context.colors.inkMuted,
                 visualDensity: VisualDensity.compact,
               ),
               IconButton(
                 onPressed: canMoveDown ? () => controller.moveExercise(exercise.localId, up: false) : null,
                 icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 20),
-                color: AppColors.inkMuted,
+                color: context.colors.inkMuted,
                 visualDensity: VisualDensity.compact,
               ),
               IconButton(
                 onPressed: () => controller.removeExercise(exercise.localId),
                 icon: const Icon(Icons.close_rounded, size: 18),
-                color: AppColors.inkMuted,
+                color: context.colors.inkMuted,
                 visualDensity: VisualDensity.compact,
               ),
             ],
           ),
           if (exercise.sets.isNotEmpty)
-            const Padding(
-              padding: EdgeInsets.only(left: 26, bottom: 2),
+            Padding(
+              padding: const EdgeInsets.only(left: 26, bottom: 2),
               child: Row(
                 children: [
                   Expanded(
                       child: Text('WEIGHT',
                           textAlign: TextAlign.center,
-                          style: TextStyle(color: AppColors.inkMuted, fontSize: 10, letterSpacing: 0.5))),
+                          style: TextStyle(color: context.colors.inkMuted, fontSize: 10, letterSpacing: 0.5))),
                   Expanded(
                       child: Text('REPS',
                           textAlign: TextAlign.center,
-                          style: TextStyle(color: AppColors.inkMuted, fontSize: 10, letterSpacing: 0.5))),
+                          style: TextStyle(color: context.colors.inkMuted, fontSize: 10, letterSpacing: 0.5))),
                 ],
               ),
             ),
@@ -185,8 +185,8 @@ class ActiveExerciseCard extends ConsumerWidget {
               icon: const Icon(Icons.add_rounded, size: 16),
               label: const Text('Add set'),
               style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.inkSecondary,
-                side: const BorderSide(color: AppColors.lineStrong, style: BorderStyle.solid),
+                foregroundColor: context.colors.inkSecondary,
+                side: BorderSide(color: context.colors.lineStrong, style: BorderStyle.solid),
                 padding: const EdgeInsets.symmetric(vertical: 10),
               ),
             ),

@@ -17,7 +17,7 @@ Future<ExerciseRef?> showExercisePickerSheet(BuildContext context) {
   return showModalBottomSheet<ExerciseRef>(
     context: context,
     isScrollControlled: true,
-    backgroundColor: AppColors.surface,
+    backgroundColor: context.colors.surface,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
@@ -164,14 +164,14 @@ class _ExercisePickerSheetState extends ConsumerState<_ExercisePickerSheet> {
               padding: const EdgeInsets.fromLTRB(16, 14, 8, 8),
               child: Row(
                 children: [
-                  const Expanded(
+                  Expanded(
                     child: Text('Add exercise',
-                        style: TextStyle(color: AppColors.ink, fontSize: 16, fontWeight: FontWeight.w600)),
+                        style: TextStyle(color: context.colors.ink, fontSize: 16, fontWeight: FontWeight.w600)),
                   ),
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
                     icon: const Icon(Icons.close_rounded),
-                    color: AppColors.inkMuted,
+                    color: context.colors.inkMuted,
                   ),
                 ],
               ),
@@ -216,7 +216,7 @@ class _ExercisePickerSheetState extends ConsumerState<_ExercisePickerSheet> {
             ),
             Container(
               padding: const EdgeInsets.all(12),
-              decoration: const BoxDecoration(border: Border(top: BorderSide(color: AppColors.line))),
+              decoration: BoxDecoration(border: Border(top: BorderSide(color: context.colors.line))),
               child: SafeArea(
                 top: false,
                 child: _creatingCustom ? _customForm() : _addCustomButton(),
@@ -239,7 +239,7 @@ class _ExercisePickerSheetState extends ConsumerState<_ExercisePickerSheet> {
         icon: const Icon(Icons.add_rounded, size: 16),
         label: const Text('Add your own exercise'),
         style: OutlinedButton.styleFrom(
-          side: const BorderSide(color: AppColors.lineStrong),
+          side: BorderSide(color: context.colors.lineStrong),
           padding: const EdgeInsets.symmetric(vertical: 12),
         ),
       ),
@@ -283,9 +283,9 @@ class _ExercisePickerSheetState extends ConsumerState<_ExercisePickerSheet> {
       padding: const EdgeInsets.fromLTRB(12, 10, 12, 4),
       child: Row(
         children: [
-          Icon(icon, size: 12, color: AppColors.inkMuted),
+          Icon(icon, size: 12, color: context.colors.inkMuted),
           const SizedBox(width: 6),
-          Text(label, style: const TextStyle(color: AppColors.inkMuted, fontSize: 12, fontWeight: FontWeight.w600)),
+          Text(label, style: TextStyle(color: context.colors.inkMuted, fontSize: 12, fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -293,7 +293,7 @@ class _ExercisePickerSheetState extends ConsumerState<_ExercisePickerSheet> {
 
   Widget _loadingLine(String text) => Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        child: Text(text, style: const TextStyle(color: AppColors.inkMuted, fontSize: 12)),
+        child: Text(text, style: TextStyle(color: context.colors.inkMuted, fontSize: 12)),
       );
 }
 
@@ -319,10 +319,10 @@ class _ExerciseRow extends StatelessWidget {
           children: [
             Expanded(
               child: Text(row.name, overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: AppColors.ink, fontSize: 14)),
+                  style: TextStyle(color: context.colors.ink, fontSize: 14)),
             ),
             Text(subtitle,
-                style: const TextStyle(color: AppColors.inkMuted, fontSize: 12), overflow: TextOverflow.ellipsis),
+                style: TextStyle(color: context.colors.inkMuted, fontSize: 12), overflow: TextOverflow.ellipsis),
           ],
         ),
       ),

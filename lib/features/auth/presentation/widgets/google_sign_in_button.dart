@@ -54,8 +54,8 @@ class _GoogleSignInButtonState extends ConsumerState<GoogleSignInButton> {
             : Image.asset('assets/branding/google_g.png', width: 18, height: 18),
         label: Text(_loading ? 'Connecting...' : 'Continue with Google'),
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.ink,
-          side: const BorderSide(color: AppColors.lineStrong),
+          foregroundColor: context.colors.ink,
+          side: BorderSide(color: context.colors.lineStrong),
           padding: const EdgeInsets.symmetric(vertical: 12),
         ),
       ),

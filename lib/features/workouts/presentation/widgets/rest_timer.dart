@@ -69,9 +69,9 @@ class _RestTimerState extends ConsumerState<RestTimer> {
     if (restEndsAt == null) {
       return Row(
         children: [
-          const Icon(Icons.timer_outlined, color: AppColors.inkMuted, size: 16),
+          Icon(Icons.timer_outlined, color: context.colors.inkMuted, size: 16),
           const SizedBox(width: 6),
-          const Text('Rest', style: TextStyle(color: AppColors.inkMuted, fontSize: 13)),
+          Text('Rest', style: TextStyle(color: context.colors.inkMuted, fontSize: 13)),
           const SizedBox(width: 10),
           for (final seconds in _presets) ...[
             _PresetChip(seconds: seconds, onTap: () => controller.startRestTimer(seconds)),
@@ -83,23 +83,23 @@ class _RestTimerState extends ConsumerState<RestTimer> {
 
     return Row(
       children: [
-        const Icon(Icons.timer_rounded, color: AppColors.accent, size: 16),
+        Icon(Icons.timer_rounded, color: context.colors.accent, size: 16),
         const SizedBox(width: 6),
         Text(
           _formatTime(remaining),
-          style: const TextStyle(color: AppColors.accent, fontSize: 15, fontWeight: FontWeight.w600),
+          style: TextStyle(color: context.colors.accent, fontSize: 15, fontWeight: FontWeight.w600),
         ),
         const Spacer(),
         IconButton(
           onPressed: controller.stopRestTimer,
           icon: const Icon(Icons.pause_rounded, size: 18),
-          color: AppColors.inkMuted,
+          color: context.colors.inkMuted,
           tooltip: 'Stop rest timer',
         ),
         IconButton(
           onPressed: () => controller.startRestTimer(workout.restDurationSeconds),
           icon: const Icon(Icons.replay_rounded, size: 18),
-          color: AppColors.inkMuted,
+          color: context.colors.inkMuted,
           tooltip: 'Reset rest timer',
         ),
       ],
@@ -121,10 +121,10 @@ class _PresetChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          border: Border.all(color: AppColors.lineStrong),
+          border: Border.all(color: context.colors.lineStrong),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Text('${seconds}s', style: const TextStyle(color: AppColors.ink, fontSize: 12)),
+        child: Text('${seconds}s', style: TextStyle(color: context.colors.ink, fontSize: 12)),
       ),
     );
   }

@@ -63,16 +63,16 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Text(
+                Text(
                   'Reset your password',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: AppColors.ink),
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: context.colors.ink),
                 ),
                 const SizedBox(height: 20),
                 if (_sent) ...[
                   Text(
                     'If an account exists for ${_emailController.text.trim()}, a reset link has been sent. '
                     'Check your inbox.',
-                    style: const TextStyle(color: AppColors.inkSecondary, fontSize: 14),
+                    style: TextStyle(color: context.colors.inkSecondary, fontSize: 14),
                   ),
                   if (_devResetLink != null) ...[
                     const SizedBox(height: 12),
@@ -91,23 +91,23 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                             style: TextStyle(color: Color(0xFFFBBF24), fontSize: 12, fontWeight: FontWeight.w600),
                           ),
                           const SizedBox(height: 4),
-                          const Text(
+                          Text(
                             'Open this link in a browser to finish resetting your password:',
-                            style: TextStyle(color: AppColors.inkSecondary, fontSize: 12),
+                            style: TextStyle(color: context.colors.inkSecondary, fontSize: 12),
                           ),
                           const SizedBox(height: 4),
                           SelectableText(
                             _devResetLink!,
-                            style: const TextStyle(color: AppColors.accent, fontSize: 12),
+                            style: TextStyle(color: context.colors.accent, fontSize: 12),
                           ),
                         ],
                       ),
                     ),
                   ],
                 ] else ...[
-                  const Text(
+                  Text(
                     'Enter the email on your account and we will send you a link to reset your password.',
-                    style: TextStyle(color: AppColors.inkSecondary, fontSize: 14),
+                    style: TextStyle(color: context.colors.inkSecondary, fontSize: 14),
                   ),
                   const SizedBox(height: 16),
                   Form(
