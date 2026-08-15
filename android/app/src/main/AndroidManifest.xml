@@ -2,6 +2,9 @@
     <!-- Required in every build variant, not just debug/profile — the app
          talks to the production backend API over HTTPS. -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- speech_to_text (Coach page voice input) — on-device recognition,
+         audio never leaves the phone except via the OS's own recognizer. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <application
         android:label="LiftRyt"
         android:name="${applicationName}"
@@ -43,6 +46,11 @@
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
+        </intent>
+        <!-- speech_to_text needs this to see the on-device recognition
+             service at all on Android 11+ (package-visibility default-deny). -->
+        <intent>
+            <action android:name="android.speech.RecognitionService"/>
         </intent>
     </queries>
 </manifest>

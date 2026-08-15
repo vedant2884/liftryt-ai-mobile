@@ -4,6 +4,13 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<!-- speech_to_text (Coach page voice input) — both keys are required by
+	     iOS or the app crashes the first time recognition is requested,
+	     rather than just denying permission. -->
+	<key>NSMicrophoneUsageDescription</key>
+	<string>LiftRyt uses your microphone to let you speak questions to your AI coach.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>LiftRyt uses speech recognition to turn what you say into text for your AI coach.</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

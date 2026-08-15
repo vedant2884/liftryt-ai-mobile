@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/api_exception.dart';
+import '../../../core/speech/speech_input_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/beta_badge.dart';
 import '../data/coach_api.dart';
@@ -49,6 +50,10 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
   bool _loadingSession = false;
   bool _sending = false;
   String? _error;
+  bool _listening = false;
+  // What was already typed before dictation started — new speech is
+  // appended after it rather than overwriting it, matching CoachInput.tsx.
+  String _textBeforeListening = '';
 
   @override
   void initState() {
@@ -71,10 +76,37 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
 
   @override
   void dispose() {
+    if (_listening) SpeechInputService.stop();
     _inputController.dispose();
     _inputFocus.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  Future<void> _toggleListening() async {
+    if (_listening) {
+      await SpeechInputService.stop();
+      return;
+    }
+    // Permission denied or no recognizer on this device — the OS's own
+    // permission prompt already explained why, so we just fall back to
+    // normal typing rather than layering on a second error surface (same
+    // approach as the web app's mic button).
+    final available = await SpeechInputService.ensureAvailable();
+    if (!available || !mounted) return;
+
+    _textBeforeListening = _inputController.text;
+    setState(() => _listening = true);
+    await SpeechInputService.listen(
+      onResult: (transcript) {
+        final prefix = _textBeforeListening.isEmpty ? '' : '$_textBeforeListening ';
+        _inputController.text = '$prefix$transcript';
+        _inputController.selection = TextSelection.collapsed(offset: _inputController.text.length);
+      },
+      onDone: () {
+        if (mounted) setState(() => _listening = false);
+      },
+    );
   }
 
   void _scrollToBottom() {
@@ -245,8 +277,8 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
                         controller: _inputController,
                         focusNode: _inputFocus,
                         enabled: !_sending,
-                        decoration: const InputDecoration(
-                          hintText: 'Ask your coach anything...',
+                        decoration: InputDecoration(
+                          hintText: _listening ? 'Listening...' : 'Ask your coach anything...',
                           border: InputBorder.none,
                           enabledBorder: InputBorder.none,
                           focusedBorder: InputBorder.none,
@@ -257,7 +289,13 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
                         onTapOutside: (_) => _inputFocus.unfocus(),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    IconButton(
+                      onPressed: _sending ? null : _toggleListening,
+                      icon: Icon(_listening ? Icons.mic_rounded : Icons.mic_none_rounded, size: 20),
+                      color: _listening ? const Color(0xFFF87171) : context.colors.inkMuted,
+                      tooltip: _listening ? 'Stop voice input' : 'Start voice input',
+                    ),
+                    const SizedBox(width: 4),
                     IconButton.filled(
                       onPressed: _sending ? null : () => _sendMessage(),
                       icon: const Icon(Icons.arrow_upward_rounded, size: 18),
