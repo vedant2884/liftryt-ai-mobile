@@ -112,11 +112,13 @@ class AuthController extends Notifier<AuthState> {
     double? defaultProgressionIncrementKg,
     AppThemeMode? theme,
     AccentColor? accentColor,
+    bool? workoutRemindersEnabled,
   }) async {
     final updated = await _authApi.updateProfile(
       defaultProgressionIncrementKg: defaultProgressionIncrementKg,
       theme: theme,
       accentColor: accentColor,
+      workoutRemindersEnabled: workoutRemindersEnabled,
     );
     await _sessionCache.save(updated);
     state = AuthState(user: updated);

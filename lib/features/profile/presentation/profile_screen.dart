@@ -55,6 +55,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     await ref.read(authControllerProvider.notifier).updateProfile(accentColor: accent);
   }
 
+  Future<void> _setWorkoutRemindersEnabled(bool enabled) async {
+    await ref.read(authControllerProvider.notifier).updateProfile(workoutRemindersEnabled: enabled);
+  }
+
   Future<void> _saveIncrement() async {
     final value = double.tryParse(_incrementController.text);
     if (value == null || value <= 0) return;
@@ -110,6 +114,33 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             Text('Appearance', style: TextStyle(color: context.colors.inkMuted, fontSize: 12, fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
             _appearanceCard(user),
+            const SizedBox(height: 20),
+            Text('Notifications', style: TextStyle(color: context.colors.inkMuted, fontSize: 12, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 8),
+            AppCard(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Workout reminders', style: TextStyle(color: context.colors.ink, fontSize: 13)),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Occasional, behavior-based nudges — never more than one at a time.',
+                          style: TextStyle(color: context.colors.inkMuted, fontSize: 11),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Switch(
+                    value: user?.workoutRemindersEnabled ?? true,
+                    activeThumbColor: context.colors.accent,
+                    onChanged: _setWorkoutRemindersEnabled,
+                  ),
+                ],
+              ),
+            ),
             const SizedBox(height: 20),
             Text('More', style: TextStyle(color: context.colors.inkMuted, fontSize: 12, fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),

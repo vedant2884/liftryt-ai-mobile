@@ -58,6 +58,18 @@ class AnalysisApi {
     }
   }
 
+  Future<List<CalendarDay>> fetchActivityCalendar({required int year, required int month}) async {
+    try {
+      final res = await _dio.get<List<dynamic>>(
+        '/workouts/analysis/calendar',
+        queryParameters: {'year': year, 'month': month},
+      );
+      return res.data!.map((e) => CalendarDay.fromJson(e as Map<String, dynamic>)).toList();
+    } on DioException catch (e) {
+      throw ApiException.fromDioException(e);
+    }
+  }
+
   Future<List<WorkoutSummary>> fetchHistory() async {
     try {
       final res = await _dio.get<List<dynamic>>('/workouts');

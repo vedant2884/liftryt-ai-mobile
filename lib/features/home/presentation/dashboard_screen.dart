@@ -30,6 +30,7 @@ class DashboardScreen extends ConsumerStatefulWidget {
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   late Future<DashboardData> _future;
+  bool _notificationDismissed = false;
 
   @override
   void initState() {
@@ -83,6 +84,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
+                  if (data.notification != null && !_notificationDismissed) ...[
+                    _NotificationBanner(
+                      notification: data.notification!,
+                      onDismiss: () => setState(() => _notificationDismissed = true),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
                   _QuickStartCard(data: data),
                   const SizedBox(height: 12),
                   Row(
@@ -104,6 +112,41 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             },
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// The backend already picks at most one notification per the app's "never
+/// spammy" rule, so this just displays it. Dismissal is per-session only —
+/// there's no delivery infra to mark it "seen" server-side (see
+/// `notification_service.py`'s docstring), so it reappears next launch,
+/// consistent with the rest of this stateless notification system.
+class _NotificationBanner extends StatelessWidget {
+  final AppNotification notification;
+  final VoidCallback onDismiss;
+
+  const _NotificationBanner({required this.notification, required this.onDismiss});
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(
+      borderColor: context.colors.accent.withValues(alpha: 0.4),
+      backgroundColor: context.colors.accent.withValues(alpha: 0.1),
+      padding: const EdgeInsets.all(14),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.notifications_rounded, color: context.colors.accent, size: 18),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(notification.message, style: TextStyle(color: context.colors.ink, fontSize: 13)),
+          ),
+          GestureDetector(
+            onTap: onDismiss,
+            child: Icon(Icons.close_rounded, color: context.colors.inkMuted, size: 16),
+          ),
+        ],
       ),
     );
   }

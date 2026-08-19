@@ -68,6 +68,22 @@ class DashboardApi {
     }
   }
 
+  /// Swallows its own errors (returns null) rather than rethrowing, unlike
+  /// this file's other fetchers — notifications are a "nice to have" nudge,
+  /// not core dashboard data, and this endpoint doesn't exist yet on an
+  /// older/not-yet-migrated backend deployment (404). One optional feature
+  /// being unavailable must never take the whole Dashboard down with it.
+  Future<AppNotification?> fetchNotification() async {
+    try {
+      final res = await _dio.get<List<dynamic>>('/notifications');
+      final list = res.data!;
+      if (list.isEmpty) return null;
+      return AppNotification.fromJson(list.first as Map<String, dynamic>);
+    } on DioException {
+      return null;
+    }
+  }
+
   Future<DashboardData> fetchDashboard() async {
     final results = await Future.wait([
       fetchStreaks(),
@@ -75,6 +91,7 @@ class DashboardApi {
       fetchLastWorkout(),
       fetchMostRecentPr(),
       fetchActiveSplit(),
+      fetchNotification(),
     ]);
     return DashboardData(
       streaks: results[0] as Streaks,
@@ -82,6 +99,7 @@ class DashboardApi {
       lastWorkout: results[2] as WorkoutSummary?,
       recentPr: results[3] as PersonalRecord?,
       activeSplit: results[4] as ActiveSplit?,
+      notification: results[5] as AppNotification?,
     );
   }
 }

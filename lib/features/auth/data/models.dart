@@ -67,6 +67,13 @@ enum ExperienceLevel {
 enum DietaryPreference {
   none,
   vegetarian,
+  nonVegetarian,
+  eggetarian,
+  // vegan/pescatarian/keto/other are legacy values kept only so an existing
+  // user's stored preference still round-trips correctly — mirrors
+  // `frontend/src/types/user.ts`'s DietaryPreference comment exactly. The
+  // signup/profile dropdowns only offer none/vegetarian/nonVegetarian/
+  // eggetarian/keto/other now.
   vegan,
   pescatarian,
   keto,
@@ -74,6 +81,8 @@ enum DietaryPreference {
 
   static DietaryPreference fromJson(String value) => switch (value) {
         'vegetarian' => DietaryPreference.vegetarian,
+        'non_vegetarian' => DietaryPreference.nonVegetarian,
+        'eggetarian' => DietaryPreference.eggetarian,
         'vegan' => DietaryPreference.vegan,
         'pescatarian' => DietaryPreference.pescatarian,
         'keto' => DietaryPreference.keto,
@@ -84,6 +93,8 @@ enum DietaryPreference {
   String toJson() => switch (this) {
         DietaryPreference.none => 'none',
         DietaryPreference.vegetarian => 'vegetarian',
+        DietaryPreference.nonVegetarian => 'non_vegetarian',
+        DietaryPreference.eggetarian => 'eggetarian',
         DietaryPreference.vegan => 'vegan',
         DietaryPreference.pescatarian => 'pescatarian',
         DietaryPreference.keto => 'keto',
@@ -131,6 +142,10 @@ class UserProfile {
   final String? googleAvatarUrl;
   final bool hasPassword;
   final bool hasCompletedOnboarding;
+  // Null only for accounts that predate date_of_birth (age is still
+  // populated for them via the backend's legacy_age fallback — see the
+  // backend's User.age).
+  final String? dateOfBirth;
   final int age;
   final Sex sex;
   final double heightCm;
@@ -141,6 +156,7 @@ class UserProfile {
   final AppThemeMode theme;
   final AccentColor accentColor;
   final double defaultProgressionIncrementKg;
+  final bool workoutRemindersEnabled;
 
   const UserProfile({
     required this.id,
@@ -151,6 +167,7 @@ class UserProfile {
     this.googleAvatarUrl,
     required this.hasPassword,
     required this.hasCompletedOnboarding,
+    this.dateOfBirth,
     required this.age,
     required this.sex,
     required this.heightCm,
@@ -161,6 +178,7 @@ class UserProfile {
     required this.theme,
     required this.accentColor,
     required this.defaultProgressionIncrementKg,
+    required this.workoutRemindersEnabled,
   });
 
   /// Display avatar: a custom upload always wins over the Google picture,
@@ -179,6 +197,7 @@ class UserProfile {
         googleAvatarUrl: googleAvatarUrl,
         hasPassword: hasPassword,
         hasCompletedOnboarding: hasCompletedOnboarding,
+        dateOfBirth: dateOfBirth,
         age: age,
         sex: sex,
         heightCm: heightCm,
@@ -189,6 +208,7 @@ class UserProfile {
         theme: theme ?? this.theme,
         accentColor: accentColor ?? this.accentColor,
         defaultProgressionIncrementKg: defaultProgressionIncrementKg,
+        workoutRemindersEnabled: workoutRemindersEnabled,
       );
 
   /// Inverse of [fromJson] — used only to persist a display copy of the
@@ -203,6 +223,7 @@ class UserProfile {
         'google_avatar_url': googleAvatarUrl,
         'has_password': hasPassword,
         'has_completed_onboarding': hasCompletedOnboarding,
+        'date_of_birth': dateOfBirth,
         'age': age,
         'sex': sex.toJson(),
         'height_cm': heightCm,
@@ -213,6 +234,7 @@ class UserProfile {
         'theme': theme.toJson(),
         'accent_color': accentColor.toJson(),
         'default_progression_increment_kg': defaultProgressionIncrementKg,
+        'workout_reminders_enabled': workoutRemindersEnabled,
       };
 
   factory UserProfile.fromJson(Map<String, dynamic> json) => UserProfile(
@@ -224,6 +246,7 @@ class UserProfile {
         googleAvatarUrl: json['google_avatar_url'] as String?,
         hasPassword: json['has_password'] as bool,
         hasCompletedOnboarding: json['has_completed_onboarding'] as bool,
+        dateOfBirth: json['date_of_birth'] as String?,
         age: json['age'] as int,
         sex: Sex.fromJson(json['sex'] as String),
         heightCm: (json['height_cm'] as num).toDouble(),
@@ -234,6 +257,11 @@ class UserProfile {
         theme: AppThemeMode.fromJson(json['theme'] as String),
         accentColor: AccentColor.fromJson(json['accent_color'] as String),
         defaultProgressionIncrementKg: (json['default_progression_increment_kg'] as num).toDouble(),
+        // Nullable-safe with a default: an older/not-yet-migrated backend
+        // deployment won't send this field at all, and that must never
+        // crash parsing — see the mobile APK crash investigation. `true`
+        // matches the backend column's own default.
+        workoutRemindersEnabled: json['workout_reminders_enabled'] as bool? ?? true,
       );
 }
 
@@ -286,7 +314,9 @@ class GoogleAuthResult {
 class GoogleCompleteProfilePayload {
   final String googleToken;
   final String username;
-  final int age;
+  // "YYYY-MM-DD" — age is always derived server-side from this, never sent
+  // directly (see the backend's User.age computed property).
+  final String dateOfBirth;
   final Sex sex;
   final double heightCm;
   final double goalWeightKg;
@@ -298,7 +328,7 @@ class GoogleCompleteProfilePayload {
   const GoogleCompleteProfilePayload({
     required this.googleToken,
     required this.username,
-    required this.age,
+    required this.dateOfBirth,
     required this.sex,
     required this.heightCm,
     required this.goalWeightKg,
@@ -311,7 +341,7 @@ class GoogleCompleteProfilePayload {
   Map<String, dynamic> toJson() => {
         'google_token': googleToken,
         'username': username,
-        'age': age,
+        'date_of_birth': dateOfBirth,
         'sex': sex.toJson(),
         'height_cm': heightCm,
         'goal_weight_kg': goalWeightKg,
@@ -328,7 +358,9 @@ class SignupPayload {
   final String password;
   final String fullName;
   final String username;
-  final int age;
+  // "YYYY-MM-DD" — age is always derived server-side from this, never sent
+  // directly (see the backend's User.age computed property).
+  final String dateOfBirth;
   final Sex sex;
   final double heightCm;
   final double goalWeightKg;
@@ -342,7 +374,7 @@ class SignupPayload {
     required this.password,
     required this.fullName,
     required this.username,
-    required this.age,
+    required this.dateOfBirth,
     required this.sex,
     required this.heightCm,
     required this.goalWeightKg,
@@ -357,7 +389,7 @@ class SignupPayload {
         'password': password,
         'full_name': fullName,
         'username': username,
-        'age': age,
+        'date_of_birth': dateOfBirth,
         'sex': sex.toJson(),
         'height_cm': heightCm,
         'goal_weight_kg': goalWeightKg,

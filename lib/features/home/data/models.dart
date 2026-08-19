@@ -149,12 +149,28 @@ class ActiveSplit {
       );
 }
 
+/// Mirrors `NotificationOut` in `app/schemas/notification.py` — the backend
+/// already picks at most one eligible notification per its "never spammy"
+/// rule, so there's nothing to rank/filter client-side.
+class AppNotification {
+  final String type;
+  final String message;
+
+  const AppNotification({required this.type, required this.message});
+
+  factory AppNotification.fromJson(Map<String, dynamic> json) => AppNotification(
+        type: json['type'] as String,
+        message: json['message'] as String,
+      );
+}
+
 class DashboardData {
   final Streaks? streaks;
   final WeightSummary? weight;
   final WorkoutSummary? lastWorkout;
   final PersonalRecord? recentPr;
   final ActiveSplit? activeSplit;
+  final AppNotification? notification;
 
   const DashboardData({
     this.streaks,
@@ -162,5 +178,6 @@ class DashboardData {
     this.lastWorkout,
     this.recentPr,
     this.activeSplit,
+    this.notification,
   });
 }

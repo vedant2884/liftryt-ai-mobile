@@ -3,10 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/api_exception.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/age.dart';
 import '../../../shared/widgets/auth_error_banner.dart';
 import '../../../shared/widgets/primary_button.dart';
 import '../data/models.dart';
 import '../state/auth_controller.dart';
+import 'widgets/date_of_birth_field.dart';
 
 /// Mirrors `frontend/src/pages/GoogleCompleteProfilePage.tsx` — same fields,
 /// same requirement (age/sex/height/username Google doesn't supply), reached
@@ -25,7 +27,8 @@ class GoogleCompleteProfileScreen extends ConsumerStatefulWidget {
 class _GoogleCompleteProfileScreenState extends ConsumerState<GoogleCompleteProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
-  final _ageController = TextEditingController();
+  DateTime? _dateOfBirth;
+  bool _dobTouched = false;
   final _heightController = TextEditingController();
   final _startingWeightController = TextEditingController();
   final _goalWeightController = TextEditingController();
@@ -41,7 +44,6 @@ class _GoogleCompleteProfileScreenState extends ConsumerState<GoogleCompleteProf
   @override
   void dispose() {
     _usernameController.dispose();
-    _ageController.dispose();
     _heightController.dispose();
     _startingWeightController.dispose();
     _goalWeightController.dispose();
@@ -49,7 +51,8 @@ class _GoogleCompleteProfileScreenState extends ConsumerState<GoogleCompleteProf
   }
 
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
+    setState(() => _dobTouched = true);
+    if (!_formKey.currentState!.validate() || _dateOfBirth == null) return;
     setState(() {
       _loading = true;
       _error = null;
@@ -58,7 +61,7 @@ class _GoogleCompleteProfileScreenState extends ConsumerState<GoogleCompleteProf
       final payload = GoogleCompleteProfilePayload(
         googleToken: widget.pending.googleToken!,
         username: _usernameController.text.trim(),
-        age: int.parse(_ageController.text),
+        dateOfBirth: isoDate(_dateOfBirth!),
         sex: _sex,
         heightCm: double.parse(_heightController.text),
         goalWeightKg: double.parse(_goalWeightController.text),
@@ -118,34 +121,24 @@ class _GoogleCompleteProfileScreenState extends ConsumerState<GoogleCompleteProf
                   },
                 ),
                 _spacer,
-                Row(
-                  children: [
-                    Expanded(
-                      child: _field(
-                        _ageController,
-                        'Age',
-                        keyboardType: TextInputType.number,
-                        validator: (v) {
-                          final n = int.tryParse(v ?? '');
-                          if (n == null || n < 13 || n > 120) return 'Invalid';
-                          return null;
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _field(
-                        _heightController,
-                        'Height (cm)',
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        validator: (v) {
-                          final n = double.tryParse(v ?? '');
-                          if (n == null || n <= 0 || n > 300) return 'Invalid';
-                          return null;
-                        },
-                      ),
-                    ),
-                  ],
+                DateOfBirthField(
+                  value: _dateOfBirth,
+                  errorText: _dobTouched && _dateOfBirth == null ? 'Date of birth is required' : null,
+                  onChanged: (d) => setState(() {
+                    _dateOfBirth = d;
+                    _dobTouched = true;
+                  }),
+                ),
+                _spacer,
+                _field(
+                  _heightController,
+                  'Height (cm)',
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  validator: (v) {
+                    final n = double.tryParse(v ?? '');
+                    if (n == null || n <= 0 || n > 300) return 'Invalid';
+                    return null;
+                  },
                 ),
                 _spacer,
                 DropdownButtonFormField<Sex>(
@@ -220,8 +213,8 @@ class _GoogleCompleteProfileScreenState extends ConsumerState<GoogleCompleteProf
                   items: const [
                     DropdownMenuItem(value: DietaryPreference.none, child: Text('None')),
                     DropdownMenuItem(value: DietaryPreference.vegetarian, child: Text('Vegetarian')),
-                    DropdownMenuItem(value: DietaryPreference.vegan, child: Text('Vegan')),
-                    DropdownMenuItem(value: DietaryPreference.pescatarian, child: Text('Pescatarian')),
+                    DropdownMenuItem(value: DietaryPreference.nonVegetarian, child: Text('Non-Vegetarian')),
+                    DropdownMenuItem(value: DietaryPreference.eggetarian, child: Text('Eggetarian')),
                     DropdownMenuItem(value: DietaryPreference.keto, child: Text('Keto')),
                     DropdownMenuItem(value: DietaryPreference.other, child: Text('Other')),
                   ],

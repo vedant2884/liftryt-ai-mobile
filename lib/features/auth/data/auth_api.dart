@@ -78,12 +78,14 @@ class AuthApi {
     double? defaultProgressionIncrementKg,
     AppThemeMode? theme,
     AccentColor? accentColor,
+    bool? workoutRemindersEnabled,
   }) async {
     try {
       final res = await _dio.patch<Map<String, dynamic>>('/auth/me', data: {
         'default_progression_increment_kg': ?defaultProgressionIncrementKg,
         'theme': ?theme?.toJson(),
         'accent_color': ?accentColor?.toJson(),
+        'workout_reminders_enabled': ?workoutRemindersEnabled,
       });
       return UserProfile.fromJson(res.data!);
     } on DioException catch (e) {

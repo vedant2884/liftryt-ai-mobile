@@ -9,6 +9,7 @@ import '../../workouts/data/models.dart' show WorkoutSummary;
 import '../../workouts/data/providers.dart';
 import '../data/analysis_api.dart';
 import '../data/models.dart';
+import 'widgets/activity_calendar.dart';
 
 String _fmtDate(DateTime d) {
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -132,6 +133,9 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen> {
                   _sectionTitle(Icons.local_fire_department_rounded, 'Overview'),
                   _overviewGrid(data.overview),
                   const SizedBox(height: 24),
+                  _sectionTitle(Icons.calendar_month_rounded, 'Activity calendar'),
+                  const ActivityCalendar(),
+                  const SizedBox(height: 24),
                   _sectionTitle(Icons.emoji_events_rounded, 'Personal records'),
                   _prList(data.prs),
                   const SizedBox(height: 24),
@@ -165,9 +169,11 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen> {
 
   Widget _overviewGrid(WorkoutOverview o) {
     final stats = [
-      ('Total workouts', '${o.totalWorkouts}'),
+      ('Current streak', '${o.currentStreakDays} ${o.currentStreakDays == 1 ? 'day' : 'days'}'),
+      ('Longest streak', '${o.longestStreakDays} ${o.longestStreakDays == 1 ? 'day' : 'days'}'),
       ('This week', '${o.workoutsThisWeek}'),
       ('This month', '${o.workoutsThisMonth}'),
+      ('Total workouts', '${o.totalWorkouts}'),
       ('Total sets', '${o.totalSets}'),
       ('Total volume', '${o.totalVolumeKg.round()} kg'),
       ('Most trained muscle', o.mostTrainedMuscle != null ? _humanize(o.mostTrainedMuscle!) : '—'),

@@ -11,6 +11,8 @@ class WorkoutOverview {
   final int totalSets;
   final String? mostTrainedMuscle;
   final String? mostTrainedExerciseName;
+  final int currentStreakDays;
+  final int longestStreakDays;
 
   const WorkoutOverview({
     required this.totalWorkouts,
@@ -20,6 +22,8 @@ class WorkoutOverview {
     required this.totalSets,
     this.mostTrainedMuscle,
     this.mostTrainedExerciseName,
+    required this.currentStreakDays,
+    required this.longestStreakDays,
   });
 
   factory WorkoutOverview.fromJson(Map<String, dynamic> json) => WorkoutOverview(
@@ -30,6 +34,58 @@ class WorkoutOverview {
         totalSets: json['total_sets'] as int,
         mostTrainedMuscle: json['most_trained_muscle'] as String?,
         mostTrainedExerciseName: json['most_trained_exercise_name'] as String?,
+        // Nullable-safe with a default: an older/not-yet-migrated backend
+        // deployment won't send these fields at all, and that must never
+        // crash parsing — see the mobile APK crash investigation.
+        currentStreakDays: json['current_streak_days'] as int? ?? 0,
+        longestStreakDays: json['longest_streak_days'] as int? ?? 0,
+      );
+}
+
+class CalendarDayWorkout {
+  final String id;
+  final String name;
+  final DateTime performedAt;
+  final int exerciseCount;
+  final int setCount;
+  final double totalVolumeKg;
+  final int? durationSeconds;
+
+  const CalendarDayWorkout({
+    required this.id,
+    required this.name,
+    required this.performedAt,
+    required this.exerciseCount,
+    required this.setCount,
+    required this.totalVolumeKg,
+    this.durationSeconds,
+  });
+
+  factory CalendarDayWorkout.fromJson(Map<String, dynamic> json) => CalendarDayWorkout(
+        id: json['id'] as String,
+        name: json['name'] as String,
+        performedAt: DateTime.parse(json['performed_at'] as String),
+        exerciseCount: json['exercise_count'] as int,
+        setCount: json['set_count'] as int,
+        totalVolumeKg: (json['total_volume_kg'] as num).toDouble(),
+        durationSeconds: json['duration_seconds'] as int?,
+      );
+}
+
+/// Only dates with >=1 logged workout are returned by the calendar endpoint
+/// — a missing date just means no workout that day, not an explicit empty
+/// entry (see `analysis_api.dart`'s fetchActivityCalendar).
+class CalendarDay {
+  final String date;
+  final List<CalendarDayWorkout> workouts;
+
+  const CalendarDay({required this.date, required this.workouts});
+
+  factory CalendarDay.fromJson(Map<String, dynamic> json) => CalendarDay(
+        date: json['date'] as String,
+        workouts: (json['workouts'] as List<dynamic>)
+            .map((w) => CalendarDayWorkout.fromJson(w as Map<String, dynamic>))
+            .toList(),
       );
 }
 
