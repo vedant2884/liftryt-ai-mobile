@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -7,6 +8,7 @@ import '../../../core/api/api_exception.dart';
 import '../../../core/speech/speech_input_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/beta_badge.dart';
+import '../../../shared/widgets/dumbbell_spinner.dart';
 import '../data/coach_api.dart';
 import '../data/models.dart';
 import 'widgets/markdown_message.dart';
@@ -49,6 +51,11 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
   List<ChatMessage> _messages = [];
   bool _loadingSession = false;
   bool _sending = false;
+  // Set once the streaming reply's placeholder bubble exists (first delta
+  // or tool_result event) — drives hiding the dumbbell "Thinking" bubble
+  // in favor of the real, growing reply, mirroring CoachPage.tsx.
+  String? _streamingMessageId;
+  CancelToken? _cancelToken;
   String? _error;
   bool _listening = false;
   // What was already typed before dictation started — new speech is
@@ -77,6 +84,7 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
   @override
   void dispose() {
     if (_listening) SpeechInputService.stop();
+    _cancelToken?.cancel();
     _inputController.dispose();
     _inputFocus.dispose();
     _scrollController.dispose();
@@ -156,14 +164,90 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
     return session.id;
   }
 
+  /// Drives one streamed reply into `_messages`, from whichever SSE
+  /// stream the caller hands it — new-message sending is the only caller
+  /// today, but this is written to also take an edit-regeneration stream
+  /// later without duplicating the delta/tool_result/done/error handling.
+  Future<void> _consumeStream(
+    String sessionId,
+    Stream<Map<String, dynamic>> events, {
+    required void Function(ChatMessage userMessage) onUserMessage,
+  }) async {
+    final streamingId = 'streaming-${DateTime.now().millisecondsSinceEpoch}';
+
+    void applyToPlaceholder(ChatMessage Function(ChatMessage? existing) build) {
+      final idx = _messages.indexWhere((m) => m.id == streamingId);
+      setState(() {
+        if (idx == -1) {
+          _streamingMessageId = streamingId;
+          _messages = [..._messages, build(null)];
+        } else {
+          final updated = [..._messages];
+          updated[idx] = build(updated[idx]);
+          _messages = updated;
+        }
+      });
+      _scrollToBottom();
+    }
+
+    await for (final event in events) {
+      switch (event['type']) {
+        case 'start':
+          onUserMessage(ChatMessage.fromJson(event['user_message'] as Map<String, dynamic>));
+        case 'delta':
+          applyToPlaceholder((existing) => ChatMessage(
+                id: streamingId,
+                sessionId: sessionId,
+                role: 'assistant',
+                content: '${existing?.content ?? ''}${event['content']}',
+                toolName: existing?.toolName,
+                toolPayload: existing?.toolPayload,
+                createdAt: existing?.createdAt ?? DateTime.now(),
+              ));
+        case 'tool_result':
+          applyToPlaceholder((existing) => ChatMessage(
+                id: streamingId,
+                sessionId: sessionId,
+                role: 'assistant',
+                content: existing?.content ?? '',
+                toolName: event['tool_name'] as String,
+                toolPayload: {
+                  'name': event['tool_name'],
+                  'arguments': event['arguments'],
+                  'result': event['result'],
+                },
+                createdAt: existing?.createdAt ?? DateTime.now(),
+              ));
+        case 'done':
+          final assistantMessage = ChatMessage.fromJson(event['assistant_message'] as Map<String, dynamic>);
+          setState(() {
+            _messages = [for (final m in _messages) if (m.id == streamingId) assistantMessage else m];
+            _streamingMessageId = null;
+          });
+        case 'error':
+          setState(() {
+            // No visible content ever arrived for this turn — drop the
+            // empty placeholder rather than leaving a blank bubble.
+            _messages = [
+              for (final m in _messages)
+                if (m.id != streamingId || m.content.isNotEmpty) m,
+            ];
+            _streamingMessageId = null;
+            _error = 'The AI coach is temporarily unavailable. Please try again.';
+          });
+      }
+    }
+  }
+
   Future<void> _sendMessage([String? text]) async {
     final content = (text ?? _inputController.text).trim();
     if (content.isEmpty || _sending) return;
     setState(() => _error = null);
     _inputController.clear();
 
+    final optimisticId = 'pending-${DateTime.now().millisecondsSinceEpoch}';
     final optimistic = ChatMessage(
-      id: 'pending-${DateTime.now().millisecondsSinceEpoch}',
+      id: optimisticId,
       sessionId: _activeSessionId ?? 'pending',
       role: 'user',
       content: content,
@@ -172,21 +256,51 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
     setState(() {
       _messages = [..._messages, optimistic];
       _sending = true;
+      _streamingMessageId = null;
     });
     _scrollToBottom();
+
+    final cancelToken = CancelToken();
+    _cancelToken = cancelToken;
     try {
       final sessionId = await _ensureSession();
-      final reply = await ref.read(coachApiProvider).sendMessage(sessionId, content);
-      if (mounted) setState(() => _messages = [..._messages, reply]);
-      _scrollToBottom();
+      await _consumeStream(
+        sessionId,
+        ref.read(coachApiProvider).sendMessageStream(sessionId, content, cancelToken: cancelToken),
+        onUserMessage: (userMessage) {
+          // Swaps the client-only optimistic id for the real persisted
+          // one, matching CoachPage.tsx — not currently load-bearing on
+          // mobile (no Edit Message feature here yet) but keeps message
+          // ids honest for whatever reads them next (e.g. a future edit
+          // feature, or just re-opening the session).
+          setState(() {
+            _messages = [for (final m in _messages) if (m.id == optimisticId) userMessage else m];
+          });
+        },
+      );
       ref.read(coachApiProvider).fetchSessions().then((s) {
         if (mounted) setState(() => _sessions = s);
       });
-    } on ApiException catch (e) {
-      if (mounted) setState(() => _error = e.message);
+    } catch (e) {
+      // An intentional Stop tap, not a failure — whatever text had
+      // already streamed in stays in the thread.
+      if (e is DioException && CancelToken.isCancel(e)) return;
+      if (mounted) {
+        setState(() => _error = e is DioException ? ApiException.fromDioException(e).message : '$e');
+      }
     } finally {
-      if (mounted) setState(() => _sending = false);
+      if (mounted) {
+        setState(() {
+          _sending = false;
+          _streamingMessageId = null;
+        });
+      }
+      _cancelToken = null;
     }
+  }
+
+  void _stopGenerating() {
+    _cancelToken?.cancel();
   }
 
   Future<void> _weeklyCheckin() async {
@@ -240,7 +354,10 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
                     : ListView.builder(
                         controller: _scrollController,
                         padding: const EdgeInsets.all(16),
-                        itemCount: _messages.length + (_sending ? 1 : 0),
+                        // Dumbbell shows from send until the first token/
+                        // tool result actually arrives, not for the whole
+                        // reply — see _streamingMessageId.
+                        itemCount: _messages.length + (_sending && _streamingMessageId == null ? 1 : 0),
                         itemBuilder: (context, i) {
                           if (i == _messages.length) {
                             return _thinkingBubble();
@@ -297,8 +414,9 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
                     ),
                     const SizedBox(width: 4),
                     IconButton.filled(
-                      onPressed: _sending ? null : () => _sendMessage(),
-                      icon: const Icon(Icons.arrow_upward_rounded, size: 18),
+                      onPressed: _sending ? _stopGenerating : () => _sendMessage(),
+                      icon: Icon(_sending ? Icons.stop_rounded : Icons.arrow_upward_rounded, size: 18),
+                      tooltip: _sending ? 'Stop generating' : 'Send message',
                       style: IconButton.styleFrom(
                         backgroundColor: context.colors.accent,
                         foregroundColor: context.colors.onAccent,
@@ -419,17 +537,11 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
               Container(height: 2, decoration: BoxDecoration(gradient: context.colors.brandGradient)),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SizedBox(
-                      width: 14,
-                      height: 14,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: context.colors.accent),
-                    ),
-                    const SizedBox(width: 8),
-                    Text('Thinking...', style: TextStyle(color: context.colors.inkMuted, fontSize: 12)),
-                  ],
+                child: DumbbellSpinner(
+                  size: 16,
+                  label: 'Thinking...',
+                  color: context.colors.accent,
+                  labelColor: context.colors.inkMuted,
                 ),
               ),
             ],
